@@ -1,0 +1,1319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>EARN.iq</title>
+<style>
+:root{
+  --bg:#f6f6f4; --surface:#fff; --border:#dedcd6; --text:#1b1b19; --muted:#6b6a65;
+  --accent:#2f6f4f; --warn:#a4541f; --error:#9c2b2b; --star:#b58900;
+  --radius:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#17181a; --surface:#1f2124; --border:#30333a; --text:#e8e8e6; --muted:#9a9a95;
+         --accent:#6fbf92; --warn:#d99a5b; --error:#e08585; --star:#d7b24a; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+header{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;
+  padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:5}
+h1{font-size:17px;margin:0;font-weight:600;letter-spacing:.2px}
+h1 span{font-weight:400;color:var(--muted);font-size:13px;margin-left:8px}
+nav.tabs{display:flex;gap:4px;flex-wrap:wrap}
+nav.tabs button{background:none;border:1px solid transparent;color:var(--muted);
+  padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-size:14px}
+nav.tabs button.on{background:var(--bg);border-color:var(--border);color:var(--text);font-weight:600}
+#headstat{margin-left:auto;font-size:12.5px;color:var(--muted);text-align:right}
+main{padding:18px 20px 60px;max-width:1500px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;margin-bottom:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+input,select,textarea,button{font:inherit;color:var(--text);background:var(--surface);
+  border:1px solid var(--border);border-radius:8px;padding:6px 9px}
+textarea{width:100%;resize:vertical;font-size:13.5px}
+input[type=checkbox]{width:auto;vertical-align:-2px}
+button{cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.quiet{color:var(--muted)}
+button:disabled{opacity:.5;cursor:default}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;
+  border-bottom:1px solid var(--border);padding:6px 8px;white-space:nowrap}
+td{border-bottom:1px solid var(--border);padding:7px 8px;vertical-align:top}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:rgba(127,127,127,.07)}
+.score{display:inline-block;min-width:34px;text-align:center;padding:1px 6px;border-radius:6px;
+  font-variant-numeric:tabular-nums;font-weight:600;font-size:12.5px;background:rgba(127,127,127,.15)}
+.score.high{background:var(--accent);color:#fff}
+.score.mid{background:rgba(127,127,127,.25)}
+.tag{font-size:11px;padding:1px 6px;border-radius:5px;border:1px solid var(--border);color:var(--muted);white-space:nowrap}
+.tag.new{border-color:var(--accent);color:var(--accent)}
+.tag.warn{border-color:var(--warn);color:var(--warn)}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.url{color:var(--muted);font-size:12px;word-break:break-all}
+.error{color:var(--error)}
+.warn{color:var(--warn)}
+dialog{border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);
+  padding:0;max-width:900px;width:92vw;max-height:88vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.dhead{display:flex;gap:12px;align-items:baseline;padding:14px 18px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface)}
+.dhead h3{margin:0;font-size:15px}
+.dbody{padding:16px 18px;overflow:auto;max-height:70vh}
+.dbody h4{margin:16px 0 5px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+pre{white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:10px;font-size:12.5px;max-height:300px;overflow:auto;margin:0}
+pre.diff span.plus{color:var(--accent)}
+pre.diff span.minus{color:var(--error)}
+.quote{border-left:3px solid var(--accent);padding:4px 0 4px 10px;font-style:italic;color:var(--text)}
+.fields{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:13px}
+.fields dt{color:var(--muted)}
+.fields dd{margin:0}
+.empty{color:var(--muted);padding:22px;text-align:center}
+.is-hit{box-shadow:inset 3px 0 0 var(--accent)}
+@media (max-width:760px){ main{padding:12px} .hide-narrow{display:none} }
+/* ── Signals ─────────────────────────────────────────────── */
+#t-signals,#t-discover{
+  --sig-pos:#2a78d6; --sig-neg:#e34948; --sig-neu:#b9b7b0; --sig-price:#52514e; --sig-mood:#eb6834;
+  --sig-grid:#e9e8e3; --sig-axis:#c3c2b7; --sig-text2:#52514e; --sig-text3:#898781;
+  --sig-archive:rgba(127,127,127,.06); --sig-sel:rgba(42,120,214,.09);
+}
+@media (prefers-color-scheme:dark){
+  #t-signals,#t-discover{ --sig-pos:#3987e5; --sig-neg:#e66767; --sig-neu:#5d5c58; --sig-price:#c3c2b7; --sig-mood:#d95926;
+    --sig-grid:#2c2e33; --sig-axis:#3c3f46; --sig-text2:#c3c2b7; --sig-text3:#898781;
+    --sig-archive:rgba(255,255,255,.035); --sig-sel:rgba(57,135,229,.14); }
+}
+.sig-filter{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.sig-filter button,.sig-view button,.e-head button{padding:4px 11px;font-size:13px}
+.sig-filter button.on,.sig-view button.on,.e-head button.on{border-color:var(--text);font-weight:600}
+.sig-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.sig-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:11px 13px;
+  cursor:pointer;text-align:left;display:block;width:100%}
+.sig-card:hover{border-color:var(--muted)}
+.sig-card.on{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.sig-card .head{display:flex;justify-content:space-between;gap:2px 8px;font-size:13px;flex-wrap:wrap}
+.sig-card .head > span:first-child{white-space:nowrap}
+.sig-card .head b{font-weight:600}
+.sig-card .value{font-size:26px;font-weight:600;line-height:1.15;margin-top:6px}
+.sig-card .word{font-size:12px;color:var(--sig-text2)}
+.sig-card .foot{font-size:12px;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;gap:6px}
+.sig-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:8px 0 6px}
+.sig-tile .label{font-size:12px;color:var(--muted)}
+.sig-tile .value{font-size:22px;font-weight:600;line-height:1.2}
+.sig-tile .delta{font-size:12px;color:var(--sig-text2)}
+.sig-charts{position:relative;outline:none}
+.sig-charts:focus-visible{box-shadow:0 0 0 2px var(--accent);border-radius:6px}
+.sig-title{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin:14px 0 2px}
+.sig-title h4{margin:0;font-size:13px;font-weight:600}
+.sig-legend{display:flex;gap:14px;font-size:12px;color:var(--sig-text2);flex-wrap:wrap}
+.sig-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.sig-legend i.line{height:2px;width:14px;vertical-align:3px;border-radius:1px}
+.sig-charts svg{display:block;width:100%;overflow:visible}
+.sig-charts svg text{font:11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:var(--sig-text3);font-variant-numeric:tabular-nums}
+.sig-charts svg text.strong{fill:var(--text);font-weight:600}
+.sig-tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:8px 10px;font-size:12.5px;box-shadow:0 4px 14px rgba(0,0,0,.12);min-width:190px;z-index:3}
+.sig-tip .t{font-weight:600;margin-bottom:4px}
+.sig-tip .r{display:flex;align-items:center;gap:7px;line-height:1.55}
+.sig-tip .r b{font-variant-numeric:tabular-nums;min-width:34px;text-align:right}
+.sig-tip .r i{display:inline-block;width:12px;height:2px;border-radius:1px}
+.sig-tip .n{color:var(--muted);font-size:11.5px;margin-top:3px}
+.sig-item{display:grid;grid-template-columns:96px 1fr;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.sig-item:last-child{border-bottom:0}
+.sig-score{font-size:12px;white-space:nowrap}
+.sig-score .arrow{display:inline-block;width:14px;text-align:center}
+.sig-score.pos .arrow{color:var(--sig-pos)} .sig-score.neg .arrow{color:var(--sig-neg)}
+.sig-item a{color:var(--text);text-decoration:none} .sig-item a:hover{text-decoration:underline}
+.sig-item .meta{font-size:12px;color:var(--muted)}
+.sig-table td,.sig-table th{font-variant-numeric:tabular-nums}
+.sig-table td.num,.sig-table th.num{text-align:right}
+.sig-article{font-size:12.5px;margin-top:3px;color:var(--text)}
+.sig-article .tag{margin-right:6px}
+.sig-group{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin:4px 0 6px;grid-column:1/-1}
+.sig-view{display:inline-flex;gap:4px;margin-right:6px}
+.sig-corr{font-size:12.5px;color:var(--sig-text2);margin:4px 0 0}
+/* ── Sources: sidebar left, content right ────────────────── */
+.q-layout{display:grid;grid-template-columns:240px 1fr;gap:14px;align-items:start}
+.q-side{position:sticky;top:76px;padding:8px;display:block}
+.q-side h5{margin:10px 8px 4px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.q-side h5:first-child{margin-top:4px}
+.q-entry{display:flex;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;
+  padding:7px 8px;border-radius:7px;font-size:14px;color:var(--text)}
+.q-entry:hover{background:rgba(127,127,127,.08)}
+.q-entry.on{background:var(--bg);box-shadow:inset 0 0 0 1px var(--border);font-weight:600}
+.q-entry .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-entry .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:400}
+.q-entry.add{color:var(--accent);font-size:13px}
+.q-dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--accent)}
+.q-dot.warn{background:var(--warn)} .q-dot.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--muted)}
+.q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.q-head h3{margin:0;font-size:17px}
+.q-head .small{margin-top:2px}
+.q-block{margin-top:18px}
+.q-block h4{margin:0 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;
+  display:flex;justify-content:space-between;align-items:center}
+.q-row{display:grid;grid-template-columns:14px minmax(0,1.6fr) minmax(0,1fr) 92px 46px auto;gap:10px;align-items:center;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:13.5px}
+.q-row:last-child{border-bottom:0}
+.q-row .dom{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-row .st{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-row .acts{display:flex;gap:4px;justify-content:flex-end}
+.q-row .acts button{padding:2px 8px;font-size:12px}
+.q-row.off{opacity:.6}
+.q-dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;font-size:13.5px;margin:0}
+.q-dl dt{color:var(--muted)} .q-dl dd{margin:0}
+.q-search{padding:7px 0;border-bottom:1px solid var(--border);font-size:13.5px;display:flex;gap:10px}
+.q-search:last-child{border-bottom:0}
+.q-search code{font-size:12.5px;word-break:break-word}
+.q-add{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.q-add input{flex:1;min-width:200px}
+#d-company .dbody label{margin-top:10px}
+#d-company .two{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+@media (max-width:760px){
+  .q-layout{grid-template-columns:1fr} .q-side{position:static}
+  .q-row{grid-template-columns:14px 1fr auto} .q-row .dom,.q-row .last,.q-row .sc{display:none}
+  #d-company .two{grid-template-columns:1fr}
+}
+/* ── Discover ────────────────────────────────────────────── */
+.e-head{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.e-row{display:grid;grid-template-columns:minmax(0,1.4fr) 170px minmax(0,2fr) auto;gap:14px;align-items:start;
+  padding:12px 0;border-bottom:1px solid var(--border)}
+.e-row:last-child{border-bottom:0}
+.e-name b{font-size:14.5px} .e-name .small{margin-top:2px}
+.e-num{font-size:13px} .e-num b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.e-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;margin-top:5px;background:var(--border);max-width:130px}
+.e-bar i{display:block;height:100%} .e-bar i+i{margin-left:2px}
+.e-ev{font-size:12.5px;line-height:1.45;margin-bottom:5px}
+.e-ev a{color:var(--text)} .e-ev .muted{font-size:12px}
+.e-acts{display:flex;flex-direction:column;gap:5px}
+.e-acts button{padding:3px 10px;font-size:12.5px;white-space:nowrap}
+.e-reason{font-size:11px;color:var(--muted);margin-top:3px}
+.t-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.3fr) minmax(0,1.6fr) auto;gap:14px;padding:11px 0;border-bottom:1px solid var(--border);align-items:start}
+.t-row:last-child{border-bottom:0}
+.t-dir{font-weight:600;font-size:14.5px}
+.t-dir.pos .arrow{color:var(--sig-pos)} .t-dir.neg .arrow{color:var(--sig-neg)}
+@media (max-width:860px){ .e-row{grid-template-columns:1fr 1fr} .e-row .e-evidence{grid-column:1/-1} .e-acts{flex-direction:row;grid-column:1/-1}
+  .t-row{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header>
+  <h1>EARN.iq<span>pre-earnings intelligence</span></h1>
+  <nav class="tabs">
+    <button data-tab="signals" class="on">Signals</button>
+    <button data-tab="discover">Discover</button>
+    <button data-tab="sources">Sources</button>
+    <button data-tab="findings">Findings</button>
+    <button data-tab="system">System</button>
+  </nav>
+  <div id="headstat"></div>
+</header>
+
+<main>
+<!-- ── Findings ──────────────────────────────────────────────────── -->
+<section id="t-findings" hidden>
+  <div class="card">
+    <div class="row">
+      <div><label>Monitor</label><select id="f-monitor"><option value="0">all</option></select></div>
+      <div><label>Score from</label><input id="f-score" type="number" min="0" max="100" value="0" style="width:80px"></div>
+      <div><label>Period</label><select id="f-days">
+        <option value="0">all time</option><option value="1">24 hours</option>
+        <option value="7">7 days</option><option value="30">30 days</option></select></div>
+      <div><label>Sort</label><select id="f-sort">
+        <option value="time">newest first</option><option value="score">score</option>
+        <option value="source">source</option></select></div>
+      <div style="flex:1;min-width:180px"><label>Search</label><input id="f-search" placeholder="text, URL, field value" style="width:100%"></div>
+      <div><label>&nbsp;</label><label class="small"><input type="checkbox" id="f-hits"> hits only</label></div>
+      <div><label>&nbsp;</label><label class="small"><input type="checkbox" id="f-changed"> changes only</label></div>
+      <button class="primary" id="f-go">Filter</button>
+      <button class="quiet" id="f-csv">CSV</button>
+      <button class="quiet" id="f-json">JSON</button>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow:auto">
+    <table id="tbl-findings"><thead><tr>
+      <th style="width:60px">Score</th><th style="width:135px">Time</th>
+      <th class="hide-narrow" style="width:150px">Monitor</th>
+      <th>Source / summary</th><th style="width:90px">Status</th>
+    </tr></thead><tbody></tbody></table>
+    <div id="f-empty" class="empty" hidden>No findings yet.</div>
+  </div>
+  <div class="row" style="justify-content:space-between">
+    <span class="small muted" id="f-count"></span>
+    <span><button class="quiet" id="f-more" hidden>Load more</button></span>
+  </div>
+</section>
+
+<!-- ── Sources ───────────────────────────────────────────────────── -->
+<section id="t-sources" hidden>
+  <div class="q-layout">
+    <nav class="q-side card" id="q-side" aria-label="Companies and monitors"></nav>
+    <div id="q-content"></div>
+  </div>
+</section>
+
+<!-- ── Signals ───────────────────────────────────────────────────── -->
+<section id="t-signals">
+  <div class="sig-filter" role="group" aria-label="Period">
+    <span class="small muted" style="margin-right:4px">Period</span>
+    <button data-days="14">14 days</button><button data-days="30" class="on">30 days</button>
+    <button data-days="60">60 days</button><button data-days="90">90 days</button>
+    <span class="small muted" id="s-state" style="margin-left:auto"></span>
+  </div>
+  <div class="sig-cards" id="s-cards"></div>
+  <div class="card" id="s-detail">
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h3 style="margin:0;font-size:16px" id="s-name"></h3>
+      <span><span class="sig-view" role="group" aria-label="View">
+        <button data-view="sentiment" class="on">Sentiment</button><button data-view="price">Price</button><button data-view="combined">Combined</button></span>
+      <button class="quiet" id="s-table-btn" aria-pressed="false">As table</button></span>
+    </div>
+    <div class="sig-tiles" id="s-tiles"></div>
+    <div class="sig-charts" id="s-charts" tabindex="0" aria-label="Charts: arrow keys select a day">
+      <div id="s-block-headlines"><div class="sig-title"><h4>Headlines per day, by sentiment</h4>
+        <div class="sig-legend"><span><i style="background:var(--sig-pos)"></i>positive</span>
+          <span><i style="background:var(--sig-neu)"></i>neutral</span>
+          <span><i style="background:var(--sig-neg)"></i>negative</span>
+          <span id="s-archive-legend"><i style="background:var(--sig-archive);box-shadow:inset 0 0 0 1px var(--border)"></i>shaded: backfilled from the archive</span></div></div>
+      <svg id="s-svg-headlines" aria-hidden="true"></svg></div>
+      <div id="s-block-sentiment"><div class="sig-title"><h4>Sentiment, rolling 7-day value (−100 to +100)</h4>
+        <div class="sig-legend"><span>above zero: <i class="line" style="background:var(--sig-pos)"></i>positive</span>
+          <span>below zero: <i class="line" style="background:var(--sig-neg)"></i>negative</span></div></div>
+      <svg id="s-svg-sentiment" aria-hidden="true"></svg></div>
+      <div id="s-block-price"><div class="sig-title"><h4 id="s-price-title">Closing price</h4></div>
+      <svg id="s-svg-price" aria-hidden="true"></svg></div>
+      <div id="s-block-combined" hidden><div class="sig-title"><h4>Price and sentiment on one axis</h4>
+        <div class="sig-legend"><span><i class="line" style="background:var(--sig-price)"></i>price: % change since start of period</span>
+          <span><i class="line" style="background:var(--sig-mood)"></i>sentiment: 7-day value in points</span></div></div>
+      <svg id="s-svg-combined" aria-hidden="true"></svg>
+      <p class="sig-corr" id="s-corr"></p>
+      <p class="small muted" style="margin:2px 0 0">Two units on one scale: how far apart the lines are depends on the scale, not on the data. Direction and timing of the moves are what carries meaning.</p></div>
+      <div class="sig-tip" id="s-tip" hidden></div>
+    </div>
+    <div id="s-table" hidden style="overflow:auto;margin-top:10px"></div>
+    <p class="small muted" id="s-note" style="margin:10px 0 0"></p>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h4 style="margin:0;font-size:13px" id="s-day-title">Headlines</h4>
+      <button class="quiet" id="s-irrelevant" hidden></button>
+    </div>
+    <div id="s-headlines"></div>
+  </div>
+  <div class="card">
+    <h4 style="margin:0 0 4px;font-size:13px">Earnings recap: sentiment before the release vs price reaction</h4>
+    <p class="small muted" style="margin:0 0 8px">Sentiment of the 14 days before each earnings date against the price move from the last close before to the first close after.</p>
+    <div id="s-recap"></div>
+  </div>
+  <div class="card">
+    <h4 style="margin:0 0 4px;font-size:13px">Alerts</h4>
+    <p class="small muted" style="margin:0 0 8px" id="a-state"></p>
+    <div id="a-list"></div>
+  </div>
+</section>
+
+<!-- ── Discover ──────────────────────────────────────────────────── -->
+<section id="t-discover" hidden>
+  <div class="e-head" role="group" aria-label="Status">
+    <button data-status="new" class="on">Candidates</button><button data-status="watched">Watched</button><button data-status="hidden">Hidden</button>
+    <span class="small muted" id="e-state" style="margin-left:auto"></span>
+  </div>
+  <div class="card" id="tr-box">
+    <h4 style="margin:0 0 4px;font-size:13px">Sentiment turning</h4>
+    <p class="small muted" style="margin:0 0 6px">Sentiment of the last 7 days differs by at least 25 points from the 21 days before, with at least 10 relevant headlines and 1.5x the usual volume. Applies to portfolio, watchlist and auto-watch; every trend is sent as an alert if alerts are configured.</p>
+    <div id="tr-list"></div>
+  </div>
+  <div class="card">
+    <p class="small muted" style="margin:0 0 6px">Companies outside your list that stood out positively in market searches or in articles read for your companies over the last 14 days. Listed securities only, checked against the Yahoo search. These are leads for your own research, not recommendations.</p>
+    <div id="e-list"></div>
+  </div>
+  <details class="card" id="v-box"><summary class="small" id="v-title">Auto-watch</summary>
+    <p class="small muted" style="margin:8px 0">The strongest candidates with a ticker get a lean time series automatically (headlines only, no article reading), so a trend becomes visible. They drop out after 30 days with fewer than three headlines, or when hidden.</p>
+    <div id="v-list"></div></details>
+  <details class="card" id="e-single-box"><summary class="small" id="e-single-title">Single signals</summary><div id="e-single" style="margin-top:8px"></div></details>
+</section>
+
+<!-- ── System ────────────────────────────────────────────────────── -->
+<section id="t-system" hidden>
+  <div class="card"><h4 style="margin:0 0 8px;font-size:13px">Status</h4><div id="b-status"></div></div>
+  <div class="card">
+    <div class="row" style="margin-bottom:8px">
+      <div><label>Keep page texts (days)</label><input id="b-days" type="number" min="7" max="3650" style="width:110px"></div>
+      <div><label>Characters per page sent to the model</label><input id="b-chars" type="number" min="2000" max="60000" step="1000" style="width:130px"></div>
+      <button class="primary" id="b-save">Save</button>
+    </div>
+    <p class="small muted" style="margin:0">More characters means more context and longer prefill. 12,000 characters are about 3,500 tokens.</p>
+  </div>
+  <div class="card">
+    <h4 style="margin:0 0 8px;font-size:13px">Monitor configuration</h4>
+    <div class="row">
+      <button class="quiet" id="b-export">Export as JSON</button>
+      <input type="file" id="b-import-file" accept="application/json,.json" hidden>
+      <button class="quiet" id="b-import" onclick="document.getElementById('b-import-file').click()">Import JSON</button>
+      <span class="small muted" id="b-import-msg"></span>
+    </div>
+    <p class="small muted" style="margin:8px 0 0">Monitors are matched by name, sources by URL. Existing sources keep their history.</p>
+  </div>
+  <div class="card" style="padding:0;overflow:auto">
+    <table id="tbl-log"><thead><tr><th style="width:150px">Time</th><th style="width:80px">Level</th><th>Message</th></tr></thead><tbody></tbody></table>
+  </div>
+</section>
+</main>
+
+<!-- Finding detail -->
+<dialog id="d-finding"><div class="dhead"><h3 id="d-title"></h3>
+  <span style="margin-left:auto"><button class="quiet" id="d-star">Star</button>
+  <button class="quiet" onclick="document.getElementById('d-finding').close()">Close</button></span></div>
+  <div class="dbody" id="d-body"></div></dialog>
+
+<!-- Edit monitor -->
+<dialog id="d-monitor"><div class="dhead"><h3 id="dm-title">Monitor</h3>
+  <span style="margin-left:auto"><button class="quiet" onclick="document.getElementById('d-monitor').close()">Cancel</button>
+  <button class="primary" id="dm-save">Save</button></span></div>
+  <div class="dbody">
+    <div class="row">
+      <div style="flex:1;min-width:220px"><label>Name</label><input id="dm-name" style="width:100%"></div>
+      <div><label>Interval (minutes)</label><input id="dm-interval" type="number" min="5" max="1440" style="width:120px"></div>
+      <div><label>Fetch</label><select id="dm-mode">
+        <option value="auto">automatic</option><option value="http">HTTP only</option>
+        <option value="chromium">always Chromium</option></select></div>
+      <div><label>Hit from score</label><input id="dm-threshold" type="number" min="0" max="100" style="width:100px"></div>
+    </div>
+    <div style="margin-top:10px"><label>Description</label><input id="dm-description" style="width:100%"></div>
+    <h4>Criteria</h4>
+    <textarea id="dm-criteria" rows="6" placeholder="What should be scored? Example: Relevant is a page that announces a new results date or publishes quarterly results with a guidance change. Not relevant are product news without financial figures."></textarea>
+    <h4>Fields the model should fill in</h4>
+    <div id="dm-fields"></div>
+    <button class="quiet" id="dm-field-add" style="margin-top:6px">Add field</button>
+    <p class="small muted" style="margin:6px 0 0">Keyword matches (<code>match</code>) and score caps (<code>cap</code>) are set in the JSON configuration; they are kept when you save here.</p>
+    <h4>Behaviour</h4>
+    <label class="small"><input type="checkbox" id="dm-change"> only judge when the page has changed</label>
+    <label class="small"><input type="checkbox" id="dm-active"> monitor active</label>
+  </div></dialog>
+
+<dialog id="d-company">
+  <div class="dhead"><h3 id="dc-title">Company</h3>
+    <span style="margin-left:auto"></span>
+    <button class="quiet" id="dc-cancel">Cancel</button>
+    <button class="primary" id="dc-save">Save</button></div>
+  <div class="dbody">
+    <div class="two">
+      <div><label>Name</label><input id="dc-name" style="width:100%" placeholder="e.g. ASML"></div>
+      <div><label>Ticker</label><input id="dc-ticker" style="width:100%" placeholder="ASML"></div>
+      <div><label>Price symbol (Yahoo)</label><input id="dc-quote" style="width:100%" placeholder="ASML.AS, or empty = ticker"></div>
+      <div><label>SEC CIK (US filers only, for past earnings dates)</label><input id="dc-cik" style="width:100%" placeholder="0000320193"></div>
+      <div><label>Euronext ID (Paris, Amsterdam ...)</label><input id="dc-euronext" style="width:100%" placeholder="NL0010273215-XAMS"></div>
+      <div><label>Group</label><select id="dc-group" style="width:100%"><option value="portfolio">Portfolio (with alerts)</option><option value="watchlist">Watchlist</option></select></div>
+    </div>
+    <label>Context for the model: what does the company do, what must it not be confused with?</label>
+    <textarea id="dc-context" rows="2"></textarea>
+    <label>Google News searches, one per line: "search terms | language" (en, de, fr, es, it, nl)</label>
+    <textarea id="dc-searches" rows="3" placeholder="ASML (earnings OR bookings OR guidance OR analyst) | en"></textarea>
+    <label>Next earnings dates: "YYYY-MM-DD | label | confirmed" or "... | estimated"</label>
+    <textarea id="dc-next" rows="2" placeholder="2027-01-28 | Q4 2026 | estimated"></textarea>
+    <label>Past earnings dates not covered by the SEC: "YYYY-MM-DD | label"</label>
+    <textarea id="dc-past" rows="2"></textarea>
+    <label class="small" id="dc-source-row"><input type="checkbox" id="dc-source" checked> also add a Google News source to the earnings monitor</label>
+    <p class="small error" id="dc-error"></p>
+  </div>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => (s??'').toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const when = s => s ? new Date(s).toLocaleString(undefined,{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+async function get(p, o){ const r = await fetch(p, o); if(!r.ok){ let t=''; try{t=(await r.json()).detail||''}catch(e){} throw new Error(t||r.status); } return r.status===204?null:r.json(); }
+const sendJSON = (p, m, d) => get(p, {method:m, headers:{'Content-Type':'application/json'}, body:JSON.stringify(d)});
+const post = p => get(p, {method:'POST'});
+const GROUP_LABEL = {portfolio: 'Portfolio', watchlist: 'Watchlist', auto: 'Auto-watch'};
+
+let monitors = [], findings = [], offset = 0, total = 0, currentFinding = null;
+
+/* ── Tabs ────────────────────────────────────────────────── */
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav.tabs button').forEach(x => x.classList.toggle('on', x===b));
+  ['findings','sources','system','signals','discover'].forEach(t => $('#t-'+t).hidden = (t !== b.dataset.tab));
+  if (b.dataset.tab === 'discover') { loadDiscover(); loadTrends(); }
+  if (b.dataset.tab === 'signals') loadSignals();
+  history.replaceState(null, '', b.dataset.tab === 'signals' ? location.pathname : '#' + b.dataset.tab);
+  if (b.dataset.tab === 'sources') loadSources();
+  if (b.dataset.tab === 'findings') loadFindings(false);
+  if (b.dataset.tab === 'system') loadSystem();
+});
+
+/* ── Findings ────────────────────────────────────────────── */
+function filter(){
+  return new URLSearchParams({
+    monitor_id: $('#f-monitor').value, min_score: $('#f-score').value || 0,
+    days: $('#f-days').value, search: $('#f-search').value, sort: $('#f-sort').value,
+    hits_only: $('#f-hits').checked, changed_only: $('#f-changed').checked});
+}
+function fillMonitorSelect(){
+  const sel = $('#f-monitor'), old = sel.value;
+  sel.innerHTML = '<option value="0">all</option>' + monitors.map(m => `<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  sel.value = monitors.some(m => String(m.id) === old) ? old : '0';
+}
+async function loadFindings(more){
+  if (!monitors.length) { monitors = await get('/api/monitors'); fillMonitorSelect(); }
+  offset = more ? offset + 100 : 0;
+  const p = filter(); p.set('limit', 100); p.set('offset', offset);
+  const d = await get('/api/findings?' + p);
+  total = d.total;
+  findings = more ? findings.concat(d.findings) : d.findings;
+  drawFindings();
+}
+function drawFindings(){
+  const tb = $('#tbl-findings tbody'); tb.innerHTML = '';
+  findings.forEach(f => {
+    const tr = document.createElement('tr');
+    tr.className = 'clickable' + (f.hit ? ' is-hit' : '');
+    tr.onclick = () => showFinding(f.id);
+    const level = f.score >= (f.threshold||60) ? 'high' : (f.score >= 35 ? 'mid' : '');
+    tr.innerHTML =
+      `<td><span class="score ${level}">${f.score}</span></td>` +
+      `<td class="small">${when(f.time)}</td>` +
+      `<td class="small hide-narrow">${esc(f.monitor_name)}</td>` +
+      `<td><div>${esc(f.source_title || f.url)}${f.starred?' <span class="tag" style="border-color:var(--star);color:var(--star)">starred</span>':''}</div>` +
+      `<div class="url">${esc(f.url)}</div>` +
+      `<div class="small" style="margin-top:3px">${esc((f.summary||'').slice(0,220))}</div></td>` +
+      `<td class="small">${f.changed ? '<span class="tag new">changed</span>' : '<span class="tag">—</span>'}` +
+      `${f.seen ? '' : '<div class="small muted" style="margin-top:3px">new</div>'}</td>`;
+    tb.appendChild(tr);
+  });
+  $('#f-empty').hidden = findings.length > 0;
+  $('#f-count').textContent = total ? `${findings.length} of ${total} findings` : '';
+  $('#f-more').hidden = findings.length >= total;
+}
+async function showFinding(id){
+  const f = await get('/api/findings/' + id);
+  currentFinding = f;
+  $('#d-title').textContent = (f.source_title || f.url).slice(0, 90);
+  $('#d-star').textContent = f.starred ? 'Unstar' : 'Star';
+  let fields = {};
+  try { fields = JSON.parse(f.fields || '{}'); } catch(e){}
+  const fl = Object.keys(fields).length
+    ? '<dl class="fields">' + Object.entries(fields).map(([k,v]) =>
+        `<dt>${esc(k)}</dt><dd>${v===null||v===undefined||v===''?'<span class="muted">—</span>':esc(typeof v==='object'?JSON.stringify(v):v)}</dd>`).join('') + '</dl>'
+    : '<p class="muted small">no fields defined</p>';
+  const diff = (f.diff||'').split('\n').map(z =>
+      z.startsWith('+') ? `<span class="plus">${esc(z)}</span>` :
+      z.startsWith('-') ? `<span class="minus">${esc(z)}</span>` : esc(z)).join('\n');
+  $('#d-body').innerHTML =
+    `<div class="row small muted"><span class="score ${f.score>=(f.threshold||60)?'high':''}">${f.score}</span>` +
+    `<span>${esc(f.monitor_name)}</span><span>${when(f.time)}</span><span>${esc(f.mode||'')} · HTTP ${f.http_code||'—'} · ${f.chars||0} chars</span>` +
+    `<span>${esc((f.model||'').split('/').pop())} · ${Math.round((f.duration_ms||0)/100)/10}s</span></div>` +
+    `<div class="url" style="margin-top:6px"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.url)}</a></div>` +
+    `<h4>Summary</h4><div>${esc(f.summary) || '<span class="muted">—</span>'}</div>` +
+    `<h4>Reasoning</h4><div>${esc(f.reasoning) || '<span class="muted">—</span>'}</div>` +
+    (f.quote ? `<h4>Evidence</h4><div class="quote">${esc(f.quote)}</div>` : '') +
+    `<h4>Fields</h4>${fl}` +
+    (f.diff ? `<h4>Change since the previous fetch</h4><pre class="diff">${diff}</pre>` : '') +
+    `<h4>Page text (stored)</h4><pre>${esc((f.text||'').slice(0,20000)) || '—'}</pre>`;
+  $('#d-finding').showModal();
+  if (!f.seen) { sendJSON('/api/findings/'+id+'/flags','POST',{seen:true}).catch(()=>{}); const i = findings.find(x=>x.id===id); if(i) i.seen = 1; }
+}
+$('#d-star').onclick = async () => {
+  if (!currentFinding) return;
+  const on = !currentFinding.starred;
+  await sendJSON('/api/findings/'+currentFinding.id+'/flags','POST',{starred:on});
+  currentFinding.starred = on ? 1 : 0;
+  $('#d-star').textContent = on ? 'Unstar' : 'Star';
+  const i = findings.find(x=>x.id===currentFinding.id); if(i) i.starred = on?1:0;
+  drawFindings();
+};
+$('#f-go').onclick = () => loadFindings(false);
+$('#f-more').onclick = () => loadFindings(true);
+$('#f-search').addEventListener('keydown', e => { if (e.key === 'Enter') loadFindings(false); });
+$('#f-csv').onclick = () => location.href = '/api/export/findings.csv?' + filter();
+$('#f-json').onclick = () => location.href = '/api/export/findings.json?' + filter();
+
+/* ── Edit monitor ────────────────────────────────────────── */
+let editing = null;
+// Extra settings of a field (match, against, cap) are not editable here, but survive saving
+function fieldRow(name='', description='', rest={}){
+  const d = document.createElement('div'); d.className = 'row'; d.style.marginTop = '5px';
+  d._rest = rest;
+  const extras = Object.keys(rest).length ? ` <span class="tag" title="${esc(JSON.stringify(rest))}">${esc(Object.keys(rest).join(', '))}</span>` : '';
+  d.innerHTML = `<input placeholder="field name" value="${esc(name)}" data-f="name" style="width:190px">
+    <input placeholder="what should go here" value="${esc(description)}" data-f="description" style="flex:1;min-width:200px">${extras}
+    <button class="quiet" data-f="del">×</button>`;
+  d.querySelector('[data-f=del]').onclick = () => d.remove();
+  return d;
+}
+function editMonitor(m){
+  editing = m;
+  $('#dm-title').textContent = m ? 'Edit monitor' : 'New monitor';
+  $('#dm-name').value = m?.name || '';
+  $('#dm-description').value = m?.description || '';
+  $('#dm-criteria').value = m?.criteria || '';
+  $('#dm-interval').value = m?.interval_min ?? 45;
+  $('#dm-mode').value = m?.mode || 'auto';
+  $('#dm-threshold').value = m?.threshold ?? 60;
+  $('#dm-change').checked = m ? !!m.only_on_change : true;
+  $('#dm-active').checked = m ? !!m.active : true;
+  const box = $('#dm-fields'); box.innerHTML = '';
+  let fields = []; try { fields = JSON.parse(m?.fields || '[]'); } catch(e){}
+  if (!fields.length) fields = [{name:'', description:''}];
+  fields.forEach(({name, description, ...rest}) => box.appendChild(fieldRow(name, description, rest)));
+  $('#d-monitor').showModal();
+}
+$('#dm-field-add').onclick = () => $('#dm-fields').appendChild(fieldRow());
+$('#dm-save').onclick = async () => {
+  const fields = [...$('#dm-fields').children].map(d => ({...(d._rest || {}),
+    name: d.querySelector('[data-f=name]').value.trim(),
+    description: d.querySelector('[data-f=description]').value.trim()})).filter(f => f.name);
+  const d = {name: $('#dm-name').value.trim(), description: $('#dm-description').value,
+    criteria: $('#dm-criteria').value, fields,
+    interval_min: +$('#dm-interval').value || 45, mode: $('#dm-mode').value,
+    threshold: +$('#dm-threshold').value || 0, only_on_change: $('#dm-change').checked,
+    active: $('#dm-active').checked};
+  if (!d.name) { alert('Name is missing'); return; }
+  try {
+    if (editing) await sendJSON('/api/monitors/'+editing.id, 'PUT', d);
+    else await sendJSON('/api/monitors', 'POST', d);
+    $('#d-monitor').close(); loadSources();
+  } catch(e){ alert('Error: ' + e.message); }
+};
+
+/* ── System ──────────────────────────────────────────────── */
+async function loadSystem(){
+  const s = await get('/api/status');
+  const m = s.model || {};
+  $('#b-status').innerHTML = `<div class="fields">
+    <dt>Monitors / sources</dt><dd>${s.monitors} active · ${s.sources} sources${s.sources_failing?` · <span class="error">${s.sources_failing} failing</span>`:''}</dd>
+    <dt>Fetches / findings</dt><dd>${s.fetches} fetches · ${s.findings} findings · ${s.hits} hits</dd>
+    <dt>Next run</dt><dd>${when(s.next_run)}${s.runner.running?` · running now: ${esc(s.runner.running)}`:''}</dd>
+    <dt>Model</dt><dd>${m.ok ? 'reachable' : `<span class="error">not reachable: ${esc(m.reason||'')}</span>`}
+       <span class="muted small">${esc(m.url||'')}${m.model ? ' · ' + esc(m.model) : ''}</span></dd>
+    <dt>Alerts</dt><dd>${s.alerts.configured ? `webhook (${esc(s.alerts.format)}), at most ${s.alerts.max_per_day} per day` : '<span class="muted">not configured (EARNIQ_ALERT_WEBHOOK_URL)</span>'}</dd>
+    <dt>SEC EDGAR</dt><dd>${s.sec_user_agent ? 'user agent declared' : '<span class="muted">no user agent set, past earnings dates from the SEC are skipped (EARNIQ_SEC_USER_AGENT)</span>'}</dd>
+    <dt>Database</dt><dd>${s.db_mb} MB · version ${esc(s.version)}</dd></div>`;
+  $('#b-days').value = s.retention_days;
+  $('#b-chars').value = s.max_chars;
+  const p = await get('/api/log?limit=100');
+  $('#tbl-log tbody').innerHTML = p.length ? p.map(z =>
+    `<tr><td class="small">${when(z.time)}</td><td class="small ${z.level==='error'?'error':(z.level==='warning'?'warn':'muted')}">${esc(z.level)}</td>
+     <td class="small">${esc(z.text)}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">empty</td></tr>';
+}
+$('#b-save').onclick = async () => {
+  await sendJSON('/api/settings','PUT',{key:'retention_days', value:$('#b-days').value});
+  await sendJSON('/api/settings','PUT',{key:'max_chars', value:$('#b-chars').value});
+  loadSystem();
+};
+$('#b-export').onclick = () => location.href = '/api/export/config.json';
+$('#b-import-file').onchange = async ev => {
+  const file = ev.target.files[0]; if (!file) return;
+  try {
+    const r = await sendJSON('/api/import', 'POST', JSON.parse(await file.text()));
+    $('#b-import-msg').textContent = `${r.monitors_new} new and ${r.monitors_updated} updated monitors, ${r.sources_new} new sources` + (r.messages.length ? ` · ${r.messages.join('; ')}` : '');
+  } catch (e) { $('#b-import-msg').textContent = 'Import failed: ' + e.message; }
+  ev.target.value = '';
+};
+
+/* ── Header ──────────────────────────────────────────────── */
+async function headstat(){
+  try {
+    const s = await get('/api/status');
+    $('#headstat').innerHTML = `${s.sources} sources · ${s.hits} hits` +
+      (s.runner.running ? ` · <span style="color:var(--accent)">running</span>` : ` · next ${when(s.next_run)}`) +
+      (s.model.ok ? '' : ' · <span class="error">model offline</span>');
+  } catch(e){ $('#headstat').innerHTML = '<span class="error">service not reachable</span>'; }
+}
+headstat(); setInterval(headstat, 30000);
+
+/* ── Signals ─────────────────────────────────────────────── */
+const SIG = {days: 30, company: null, overview: null, data: null, day: null, irrelevant: false};
+const SVGNS = 'http://www.w3.org/2000/svg';
+function sv(name, attrs, parent){ const e = document.createElementNS(SVGNS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function el(tag, text, cls){ const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+const num = (v, d=0) => v == null ? '—' : v.toLocaleString(undefined, {minimumFractionDigits: d, maximumFractionDigits: d});
+const signed = v => { if (v == null) return '—'; const r = Math.round(Math.abs(v)); return (r === 0 ? '±' : v > 0 ? '+' : '−') + num(r); };
+function word(v){ if (v == null) return 'no data'; if (v >= 25) return 'positive'; if (v >= 8) return 'slightly positive';
+  if (v > -8) return 'neutral'; if (v > -25) return 'slightly negative'; return 'negative'; }
+const shortDay = t => new Date(t + 'T12:00:00Z').toLocaleDateString(undefined, {day: 'numeric', month: 'short'});
+const longDay = t => new Date(t + 'T12:00:00Z').toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'});
+const inDays = t => Math.round((new Date(t + 'T12:00:00Z') - new Date(new Date().toISOString().slice(0, 10) + 'T12:00:00Z')) / 864e5);
+const color = n => getComputedStyle($('#t-signals')).getPropertyValue(n).trim();
+
+async function loadSignals(){
+  try { SIG.overview = await get('/api/signals'); }
+  catch (e) { $('#s-cards').textContent = 'Signals not available: ' + e.message; return; }
+  if (!SIG.overview.companies.some(f => f.company === SIG.company)) SIG.company = SIG.overview.companies[0]?.company;
+  drawCards(); drawState(); loadAlerts();
+  $('#s-detail').hidden = !SIG.company;
+  if (!SIG.company) { $('#s-cards').appendChild(el('div', 'No companies yet. Add one under Sources.', 'card empty')); return; }
+  await loadCompany();
+}
+async function loadCompany(){
+  $('#s-detail').style.opacity = .55;           // keep the frame, no flicker
+  try { SIG.data = await get(`/api/signals/${SIG.company}?days=${SIG.days}`); }
+  finally { $('#s-detail').style.opacity = 1; }
+  const r = SIG.data.series;
+  if (!SIG.day || !r.some(x => x.day === SIG.day)) SIG.day = ([...r].reverse().find(x => x.n > 0) || r[r.length - 1]).day;
+  drawDetail(); loadHeadlines(); drawRecap();
+}
+
+function drawState(){
+  const s = SIG.overview.state;
+  const parts = [`${num(s.headlines)} headlines since ${s.since ? shortDay(s.since) : '—'}`];
+  if (s.open) parts.push(`${num(s.open)} not scored yet`);
+  if (s.step) parts.push(s.step);
+  $('#s-state').textContent = parts.join(' · ');
+  $('#s-state').title = s.error ? 'Last error: ' + s.error : '';
+}
+
+function sparkline(svg, values, id){
+  const W = 180, H = 34, p = 3; svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  const D = Math.max(25, ...values.filter(v => v != null).map(Math.abs));
+  const x = i => p + i * (W - 2 * p) / Math.max(1, values.length - 1), y = v => H / 2 - v / D * (H / 2 - p);
+  sv('line', {x1: 0, x2: W, y1: H / 2, y2: H / 2, stroke: 'var(--sig-axis)', 'stroke-width': 1}, svg);
+  const g = sv('linearGradient', {id, gradientUnits: 'userSpaceOnUse', x1: 0, x2: 0, y1: 0, y2: H}, sv('defs', {}, svg));
+  [[0, '--sig-pos'], [.5, '--sig-pos'], [.5, '--sig-neg'], [1, '--sig-neg']].forEach(([o, c]) => sv('stop', {offset: o, 'stop-color': color(c)}, g));
+  let d = '', on = false;
+  values.forEach((v, i) => { if (v == null) { on = false; return; } d += (on ? 'L' : 'M') + x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; });
+  sv('path', {d, fill: 'none', stroke: `url(#${id})`, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, svg);
+}
+
+function drawCards(){
+  const box = $('#s-cards'); box.innerHTML = '';
+  const RANK = {portfolio: 0, watchlist: 1, auto: 2};
+  const visible = SIG.overview.companies.filter(f => f.group !== 'auto' || f.company === SIG.company);
+  const groups = new Set(visible.map(f => f.group || 'portfolio')); let last = null;
+  [...visible].sort((a, b) => RANK[a.group || 'portfolio'] - RANK[b.group || 'portfolio']).forEach((f, i) => {
+    const g = f.group || 'portfolio';
+    if (groups.size > 1 && g !== last) { box.appendChild(el('div', GROUP_LABEL[g], 'sig-group')); last = g; }
+    const b = el('button', null, 'sig-card' + (f.company === SIG.company ? ' on' : ''));
+    b.setAttribute('aria-pressed', f.company === SIG.company);
+    const head = el('div', null, 'head');
+    const n = el('span'); n.appendChild(el('b', f.name)); n.appendChild(document.createTextNode(' · ' + f.ticker));
+    head.appendChild(n);
+    const t = f.next; const tt = el('span', t ? `Earnings ${t.confirmed === false ? '~' : ''}${shortDay(t.day)}` : 'date open', 'muted');
+    if (t) tt.title = `${t.kind} in ${inDays(t.day)} days${t.confirmed === false ? ' (not confirmed yet)' : ''}`;
+    head.appendChild(tt); b.appendChild(head);
+    b.appendChild(el('div', signed(f.net7), 'value'));
+    b.appendChild(el('div', 'Sentiment 7 days: ' + word(f.net7), 'word'));
+    const s = sv('svg', {'aria-hidden': 'true', style: 'width:100%;margin-top:6px'}); b.appendChild(s);
+    sparkline(s, f.trend.map(x => x.net7), 'sig-sl-' + i);
+    const u = el('div', null, 'foot');
+    u.appendChild(el('span', `${num(f.headlines7)} in 7 days`));
+    u.appendChild(el('span', `prev. ${signed(f.net7_prev)}`));
+    b.appendChild(u);
+    b.onclick = () => { SIG.company = f.company; SIG.day = null; drawCards(); loadCompany(); };
+    box.appendChild(b);
+  });
+}
+
+function tile(label, value, delta){
+  const k = el('div', null, 'sig-tile'); k.appendChild(el('div', label, 'label'));
+  k.appendChild(el('div', value, 'value')); if (delta) k.appendChild(el('div', delta, 'delta')); return k;
+}
+
+function drawDetail(){
+  const d = SIG.data, f = SIG.overview.companies.find(x => x.company === SIG.company) || {};
+  $('#s-name').textContent = `${d.name} · ${d.ticker}`;
+  const k = $('#s-tiles'); k.innerHTML = '';
+  k.appendChild(tile('Sentiment, last 7 days', `${signed(f.net7)}  ${word(f.net7)}`, `previous week ${signed(f.net7_prev)}`));
+  const dm = f.headlines7_prev ? Math.round(100 * (f.headlines7 / f.headlines7_prev - 1)) : null;
+  k.appendChild(tile('Headlines, last 7 days', num(f.headlines7), dm == null ? 'previous week —' : `previous week ${num(f.headlines7_prev)} (${signed(dm)} %)`));
+  const t = d.next;
+  k.appendChild(tile('Next earnings', t ? longDay(t.day) : 'not announced',
+    t ? `${t.kind} · in ${inDays(t.day)} days${t.confirmed === false ? ' · not confirmed' : ''}` : 'add the date under Sources'));
+  const rb = d.recap.filter(x => x.match != null);
+  k.appendChild(tile('Earnings recap', rb.length ? `${rb.filter(x => x.match).length} of ${rb.length}` : '—',
+    rb.length ? 'releases where sentiment and price direction agreed' : 'no past earnings date in the data yet'));
+  $('#s-price-title').textContent = `Closing price (${d.currency || '—'})`;
+  const archive = d.series.filter(x => x.archive).length;
+  $('#s-note').textContent = (archive ? `Days before ${shortDay(d.live_since)} were backfilled from the Google News archive. The archive thins out with age, so volume is only comparable from ${shortDay(d.live_since)} on. ` : '') +
+    'Every headline is counted, including the same story from several outlets. Headlines are scored by title; articles that were read in full count 1.5x. Irrelevant headlines (other company, how-tos, advertising) do not enter the sentiment.';
+  $('#s-archive-legend').hidden = !archive;
+  drawCharts(); drawTable();
+}
+
+/* shared x axis for all charts */
+function axis(){
+  const W = Math.max(320, $('#s-charts').clientWidth), ml = 40, mr = 44, n = SIG.data.series.length;
+  const band = (W - ml - mr) / n;
+  return {W, ml, mr, n, band, x: i => ml + band * (i + .5), bw: Math.max(2, Math.min(24, band * .72))};
+}
+function frame(svg, H){ svg.innerHTML = ''; const a = axis(); svg.setAttribute('viewBox', `0 0 ${a.W} ${H}`); svg.setAttribute('height', H); return a; }
+function xLabels(svg, a, y){
+  const r = SIG.data.series, step = Math.max(1, Math.ceil(64 / a.band));
+  r.forEach((d, i) => { if ((r.length - 1 - i) % step) return;
+    sv('text', {x: a.x(i), y, 'text-anchor': 'middle'}, svg).textContent = shortDay(d.day); });
+}
+function background(svg, a, top, bottom){
+  const r = SIG.data.series, nArchive = r.filter(x => x.archive).length;
+  if (nArchive) sv('rect', {x: a.ml, y: top, width: a.band * Math.min(nArchive, r.length), height: bottom - top, fill: 'var(--sig-archive)'}, svg);
+  const i = r.findIndex(x => x.day === SIG.day);
+  if (i >= 0) sv('rect', {x: a.ml + a.band * i, y: top, width: a.band, height: bottom - top, fill: 'var(--sig-sel)'}, svg);
+  SIG.data.earnings.forEach(t => { const j = r.findIndex(x => x.day === t.day); if (j < 0) return;
+    sv('line', {x1: a.x(j), x2: a.x(j), y1: top, y2: bottom, stroke: 'var(--sig-text2)', 'stroke-width': 1}, svg); });
+}
+function crosshair(svg, top, bottom){ return sv('line', {class: 'sig-ch', visibility: 'hidden', x1: 0, x2: 0, y1: top, y2: bottom, stroke: 'var(--text)', 'stroke-width': 1, opacity: .45}, svg); }
+function bar(x, y, w, h, rTop, rBottom){
+  if (h <= 0) return '';
+  const ro = Math.min(rTop, h / 2, w / 2), ru = Math.min(rBottom, h / 2, w / 2);
+  return `M${x} ${y + ro}a${ro} ${ro} 0 0 1 ${ro} ${-ro}h${w - 2 * ro}a${ro} ${ro} 0 0 1 ${ro} ${ro}` +
+         `v${h - ro - ru}a${ru} ${ru} 0 0 1 ${-ru} ${ru}h${-(w - 2 * ru)}a${ru} ${ru} 0 0 1 ${-ru} ${-ru}z`;
+}
+function nice(v){ const s = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]; return s.find(x => x >= v) || Math.ceil(v / 1000) * 1000; }
+
+function drawCharts(){
+  const view = SIG.view || 'sentiment';
+  $('#s-block-headlines').hidden = view === 'price';
+  $('#s-block-sentiment').hidden = view !== 'sentiment';
+  $('#s-block-price').hidden = view === 'combined';
+  $('#s-block-combined').hidden = view !== 'combined';
+  drawChartsInner(view);
+  if (view === 'combined') drawCombined();
+}
+function drawChartsInner(view){
+  const r = SIG.data.series;
+  /* 1 · Headlines: diverging stacked bars, neutral in the middle */
+  const s1 = $('#s-svg-headlines'), H1 = 196, o1 = 22, u1 = 172, a = frame(s1, H1), mid = (o1 + u1) / 2;
+  const M = nice(Math.max(4, ...r.map(d => Math.max(d.pos + d.neu / 2, d.neg + d.neu / 2))));
+  const k = (u1 - o1) / 2 / M;
+  background(s1, a, o1, u1);
+  [M, M / 2].forEach(v => [mid - v * k, mid + v * k].forEach(y => {
+    sv('line', {x1: a.ml, x2: a.W - a.mr, y1: y, y2: y, stroke: 'var(--sig-grid)', 'stroke-width': 1}, s1);
+    sv('text', {x: a.ml - 6, y: y + 4, 'text-anchor': 'end'}, s1).textContent = num(v); }));
+  sv('line', {x1: a.ml, x2: a.W - a.mr, y1: mid, y2: mid, stroke: 'var(--sig-axis)', 'stroke-width': 1}, s1);
+  sv('text', {x: a.ml - 6, y: o1 - 8, 'text-anchor': 'end'}, s1).textContent = 'positive';
+  sv('text', {x: a.ml - 6, y: u1 + 14, 'text-anchor': 'end'}, s1).textContent = 'negative';
+  const gap = 1;                                    // 2 px between segments: 1 px per side
+  r.forEach((d, i) => {
+    const x = a.x(i) - a.bw / 2, hn = d.neu / 2 * k, hp = d.pos * k, hg = d.neg * k;
+    const seg = (dd, c) => { if (dd) sv('path', {d: dd, fill: `var(${c})`}, s1); };
+    // up: neutral (half), positive on top
+    seg(bar(x, mid - hn, a.bw, Math.max(0, hn - (hp ? gap : 0)), hp ? 0 : 4, 0), '--sig-neu');
+    seg(bar(x, mid - hn - hp, a.bw, Math.max(0, hp - (hn ? gap : 0)), 4, 0), '--sig-pos');
+    // down: neutral (half), negative below
+    seg(bar(x, mid, a.bw, Math.max(0, hn - (hg ? gap : 0)), 0, hg ? 0 : 4), '--sig-neu');
+    seg(bar(x, mid + hn + (hn ? gap : 0), a.bw, Math.max(0, hg - (hn ? gap : 0)), 0, 4), '--sig-neg');
+  });
+  SIG.data.earnings.forEach(t => { const j = r.findIndex(x => x.day === t.day); if (j < 0) return;
+    sv('text', {x: a.x(j) + 4, y: o1 - 8, class: 'strong'}, s1).textContent = 'Earnings ' + shortDay(t.day); });
+  xLabels(s1, a, H1 - 4); crosshair(s1, o1, u1);
+
+  /* 2 · Sentiment: one line, coloured by sign */
+  const s2 = $('#s-svg-sentiment'), H2 = 138, o2 = 10, u2 = 116, a2 = frame(s2, H2);
+  const values = r.map(d => d.net7), D = Math.min(100, nice(Math.max(25, ...values.filter(v => v != null).map(Math.abs))));
+  const y2 = v => o2 + (D - v) / (2 * D) * (u2 - o2), zero2 = y2(0);
+  background(s2, a2, o2, u2);
+  [D, D / 2, -D / 2, -D].forEach(v => { sv('line', {x1: a2.ml, x2: a2.W - a2.mr, y1: y2(v), y2: y2(v), stroke: 'var(--sig-grid)', 'stroke-width': 1}, s2);
+    sv('text', {x: a2.ml - 6, y: y2(v) + 4, 'text-anchor': 'end'}, s2).textContent = signed(v); });
+  sv('line', {x1: a2.ml, x2: a2.W - a2.mr, y1: zero2, y2: zero2, stroke: 'var(--sig-axis)', 'stroke-width': 1}, s2);
+  sv('text', {x: a2.ml - 6, y: zero2 + 4, 'text-anchor': 'end'}, s2).textContent = '0';
+  const grad = sv('linearGradient', {id: 'sig-grad', gradientUnits: 'userSpaceOnUse', x1: 0, x2: 0, y1: o2, y2: u2}, sv('defs', {}, s2));
+  const z = (zero2 - o2) / (u2 - o2);
+  [[0, '--sig-pos'], [z, '--sig-pos'], [z, '--sig-neg'], [1, '--sig-neg']].forEach(([o, c]) => sv('stop', {offset: o, 'stop-color': color(c)}, grad));
+  let line = '', area = '', on = false, last = null;
+  values.forEach((v, i) => {
+    if (v == null) { if (on) area += `L${a2.x(last).toFixed(1)} ${zero2}Z`; on = false; return; }
+    const p = `${a2.x(i).toFixed(1)} ${y2(v).toFixed(1)}`;
+    if (!on) { line += 'M' + p; area += `M${a2.x(i).toFixed(1)} ${zero2}L` + p; } else { line += 'L' + p; area += 'L' + p; }
+    on = true; last = i;
+  });
+  if (on) area += `L${a2.x(last).toFixed(1)} ${zero2}Z`;
+  sv('path', {d: area, fill: 'url(#sig-grad)', opacity: .1}, s2);
+  sv('path', {d: line, fill: 'none', stroke: 'url(#sig-grad)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, s2);
+  if (last != null) {
+    sv('circle', {cx: a2.x(last), cy: y2(values[last]), r: 4, fill: color(values[last] >= 0 ? '--sig-pos' : '--sig-neg'), stroke: 'var(--surface)', 'stroke-width': 2}, s2);
+    sv('text', {x: a2.x(last) + 8, y: y2(values[last]) + 4, class: 'strong'}, s2).textContent = signed(values[last]);
+  }
+  xLabels(s2, a2, H2 - 4); crosshair(s2, o2, u2);
+
+  /* 3 · Price: its own axis, its own chart (no second y scale) */
+  const s3 = $('#s-svg-price'), H3 = view === 'price' ? 260 : 128, o3 = 10, u3 = H3 - 22, a3 = frame(s3, H3);
+  const kp = r.map((d, i) => [i, d.price]).filter(p => p[1] != null);
+  background(s3, a3, o3, u3);
+  if (kp.length > 1) {
+    let lo = Math.min(...kp.map(p => p[1])), hi = Math.max(...kp.map(p => p[1])); const pad = (hi - lo) * .08 || hi * .02; lo -= pad; hi += pad;
+    const y3 = v => u3 - (v - lo) / (hi - lo) * (u3 - o3);
+    [lo + (hi - lo) * .1, (lo + hi) / 2, hi - (hi - lo) * .1].forEach(v => {
+      sv('line', {x1: a3.ml, x2: a3.W - a3.mr, y1: y3(v), y2: y3(v), stroke: 'var(--sig-grid)', 'stroke-width': 1}, s3);
+      sv('text', {x: a3.ml - 6, y: y3(v) + 4, 'text-anchor': 'end'}, s3).textContent = num(v, v < 100 ? 1 : 0); });
+    sv('path', {d: kp.map((p, j) => (j ? 'L' : 'M') + a3.x(p[0]).toFixed(1) + ' ' + y3(p[1]).toFixed(1)).join(''),
+      fill: 'none', stroke: 'var(--sig-price)', 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, s3);
+    const l = kp[kp.length - 1];
+    sv('circle', {cx: a3.x(l[0]), cy: y3(l[1]), r: 4, fill: 'var(--sig-price)', stroke: 'var(--surface)', 'stroke-width': 2}, s3);
+    sv('text', {x: a3.x(l[0]) + 8, y: y3(l[1]) + 4, class: 'strong'}, s3).textContent = num(l[1], 2);
+  } else sv('text', {x: a3.ml, y: (o3 + u3) / 2}, s3).textContent = 'No prices yet.';
+  xLabels(s3, a3, H3 - 4); crosshair(s3, o3, u3);
+}
+
+function showTip(i, px, py){
+  const d = SIG.data.series[i]; if (!d) return;
+  const box = $('#s-charts'), tip = $('#s-tip'), a = axis();
+  box.querySelectorAll('.sig-ch').forEach(l => { l.setAttribute('x1', a.x(i)); l.setAttribute('x2', a.x(i)); l.setAttribute('visibility', 'visible'); });
+  tip.innerHTML = '';
+  tip.appendChild(el('div', longDay(d.day), 't'));
+  const row = (value, name, c) => { const z = el('div', null, 'r'); const i = el('i'); i.style.background = c ? `var(${c})` : 'transparent';
+    z.appendChild(i); z.appendChild(el('b', value)); z.appendChild(el('span', name)); tip.appendChild(z); };
+  row(num(d.pos), 'positive', '--sig-pos'); row(num(d.neu), 'neutral', '--sig-neu'); row(num(d.neg), 'negative', '--sig-neg');
+  row(signed(d.net7), `sentiment 7 days (day: ${signed(d.net)})`, null);
+  if (d.price != null) row(num(d.price, 2), `close ${SIG.data.currency}`, '--sig-price');
+  const ev = SIG.data.earnings.find(t => t.day === d.day);
+  const note = [`${num(d.n)} headlines`, d.irrelevant ? `${num(d.irrelevant)} not relevant` : '',
+    d.open ? `${num(d.open)} not scored yet` : '', d.archive ? 'from the archive, incomplete' : '', ev ? 'Earnings: ' + (ev.kind || 'results') : ''].filter(Boolean).join(' · ');
+  tip.appendChild(el('div', note, 'n'));
+  tip.hidden = false;
+  const bw = box.clientWidth, tw = tip.offsetWidth;
+  tip.style.left = Math.max(0, Math.min(bw - tw, px + 14 > bw - tw ? px - tw - 14 : px + 14)) + 'px';
+  tip.style.top = Math.max(0, py - 20) + 'px';
+}
+function hideTip(){ $('#s-tip').hidden = true; $('#s-charts').querySelectorAll('.sig-ch').forEach(l => l.setAttribute('visibility', 'hidden')); }
+function indexAt(ev){ const a = axis(), box = $('#s-charts').getBoundingClientRect();
+  const x = (ev.clientX - box.left) / box.width * a.W; return Math.max(0, Math.min(a.n - 1, Math.floor((x - a.ml) / a.band))); }
+function pickDay(i){ SIG.day = SIG.data.series[i].day; drawCharts(); loadHeadlines(); }
+(function(){
+  const box = $('#s-charts');
+  box.addEventListener('pointermove', ev => { if (!SIG.data || !ev.target.closest('svg')) { hideTip(); return; }
+    const r = box.getBoundingClientRect(); showTip(indexAt(ev), ev.clientX - r.left, ev.clientY - r.top); });
+  box.addEventListener('pointerleave', hideTip);
+  box.addEventListener('click', ev => { if (SIG.data && ev.target.closest('svg')) pickDay(indexAt(ev)); });
+  box.addEventListener('keydown', ev => {
+    if (!SIG.data || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(ev.key)) return;
+    ev.preventDefault(); const r = SIG.data.series; let i = r.findIndex(x => x.day === SIG.day);
+    i = ev.key === 'Home' ? 0 : ev.key === 'End' ? r.length - 1 : Math.max(0, Math.min(r.length - 1, i + (ev.key === 'ArrowLeft' ? -1 : 1)));
+    pickDay(i); const a = axis(), sc = box.clientWidth / a.W; showTip(i, a.x(i) * sc, 30);
+  });
+  box.addEventListener('blur', hideTip);
+  let wait; addEventListener('resize', () => { clearTimeout(wait); wait = setTimeout(() => { if (SIG.data && !$('#t-signals').hidden) drawCharts(); }, 150); });
+  document.querySelectorAll('.sig-filter [data-days]').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.sig-filter [data-days]').forEach(x => x.classList.toggle('on', x === b));
+    SIG.days = +b.dataset.days; loadCompany(); });
+  $('#s-table-btn').onclick = () => { const on = $('#s-table').hidden; $('#s-table').hidden = !on; $('#s-charts').hidden = on;
+    $('#s-table-btn').textContent = on ? 'As chart' : 'As table'; $('#s-table-btn').setAttribute('aria-pressed', on); if (!on) drawCharts(); };
+  $('#s-irrelevant').onclick = () => { SIG.irrelevant = !SIG.irrelevant; loadHeadlines(); };
+})();
+
+function drawTable(){
+  const d = SIG.data, t = el('table', null, 'sig-table'), head = t.createTHead().insertRow();
+  [['Day', ''], ['Headlines', 'num'], ['positive', 'num'], ['neutral', 'num'], ['negative', 'num'], ['not relevant', 'num'], ['Sentiment day', 'num'], ['Sentiment 7 d', 'num'], [`Price ${d.currency}`, 'num']]
+    .forEach(([h, c]) => head.appendChild(el('th', h, c)));
+  const tb = t.createTBody();
+  [...d.series].reverse().forEach(x => { const z = tb.insertRow();
+    [[shortDay(x.day) + (x.archive ? ' (archive)' : ''), ''], [num(x.n), 'num'], [num(x.pos), 'num'], [num(x.neu), 'num'], [num(x.neg), 'num'], [num(x.irrelevant), 'num'],
+     [signed(x.net), 'num'], [signed(x.net7), 'num'], [x.price == null ? '—' : num(x.price, 2), 'num']]
+      .forEach(([v, c]) => { const td = z.insertCell(); td.textContent = v; if (c) td.className = c; }); });
+  $('#s-table').innerHTML = ''; $('#s-table').appendChild(t);
+}
+
+const RELEVANCE = ['not relevant', 'background', 'signal', 'strong signal'];
+async function loadHeadlines(){
+  const items = await get(`/api/signals/${SIG.company}/headlines?day=${SIG.day}`);
+  const box = $('#s-headlines'); box.innerHTML = '';
+  const nIrr = items.filter(m => m.relevance === 0).length;
+  $('#s-day-title').textContent = `Headlines on ${longDay(SIG.day)} · ${num(items.length)}`;
+  $('#s-irrelevant').hidden = !nIrr;
+  $('#s-irrelevant').textContent = SIG.irrelevant ? `hide ${nIrr} not relevant` : `show ${nIrr} not relevant`;
+  const show = items.filter(m => SIG.irrelevant || m.relevance !== 0);
+  if (!show.length) { box.appendChild(el('div', items.length ? 'Only irrelevant headlines on this day.' : 'No headlines on this day.', 'empty')); return; }
+  show.forEach(m => {
+    const z = el('div', null, 'sig-item');
+    const s = m.sentiment, w = el('div', null, 'sig-score' + (s > 0 ? ' pos' : s < 0 ? ' neg' : ''));
+    const arrow = el('span', s == null ? '·' : s > 0 ? '▲' : s < 0 ? '▼' : '–', 'arrow'); arrow.setAttribute('aria-hidden', 'true');
+    w.appendChild(arrow);
+    w.appendChild(document.createTextNode(s == null ? ' pending' : ` ${s > 0 ? '+' : s < 0 ? '−' : '±'}${Math.abs(s)} ${s > 0 ? 'positive' : s < 0 ? 'negative' : 'neutral'}`));
+    z.appendChild(w);
+    const right = el('div');
+    const title = /^https:\/\//.test(m.link || '') ? el('a', m.title) : el('span', m.title);
+    if (title.tagName === 'A') { title.href = m.link; title.target = '_blank'; title.rel = 'noopener noreferrer'; }
+    right.appendChild(title);
+    if (m.article_id) { const a = el('div', null, 'sig-article'); a.appendChild(el('span', 'article read', 'tag new'));
+      if (m.key_point) a.appendChild(document.createTextNode(m.key_point)); right.appendChild(a); }
+    else if (m.key_point) right.appendChild(el('div', m.key_point, 'sig-article'));
+    right.appendChild(el('div', [m.publisher, m.time ? new Date(m.time + 'Z').toLocaleTimeString(undefined, {hour: '2-digit', minute: '2-digit'}) : '',
+      m.relevance != null ? RELEVANCE[m.relevance] : 'not scored yet', m.topic].filter(Boolean).join(' · '), 'meta'));
+    z.appendChild(right); box.appendChild(z);
+  });
+}
+
+function drawRecap(){
+  const box = $('#s-recap'), rb = SIG.data.recap; box.innerHTML = '';
+  if (!rb.length) { box.appendChild(el('div', 'No past earnings date with headlines in the data yet. Past dates come from SEC 8-K filings (US) or from the company settings.', 'empty')); return; }
+  const t = el('table', null, 'sig-table'), head = t.createTHead().insertRow();
+  [['Date', ''], ['Event', ''], ['Headlines before', 'num'], ['relevant', 'num'], ['Sentiment before', 'num'], ['Price reaction', 'num'], ['Direction matched', '']]
+    .forEach(([h, c]) => head.appendChild(el('th', h, c)));
+  const tb = t.createTBody();
+  [...rb].reverse().forEach(x => { const z = tb.insertRow();
+    [[longDay(x.day), ''], [x.kind || 'Results', ''], [num(x.headlines), 'num'], [num(x.relevant), 'num'],
+     [`${signed(x.net14)} ${word(x.net14)}`, 'num'], [`${x.reaction > 0 ? '+' : x.reaction < 0 ? '−' : '±'}${num(Math.abs(x.reaction), 1)} %`, 'num'],
+     [x.match == null ? '— sentiment neutral' : x.match ? 'yes' : 'no', '']]
+      .forEach(([v, c]) => { const td = z.insertCell(); td.textContent = v; if (c) td.className = c; });
+    z.cells[5].title = `close ${shortDay(x.from_day)} vs close ${shortDay(x.to_day)}`; });
+  box.appendChild(t);
+  const n = rb.filter(x => x.match != null).length;
+  if (n) box.appendChild(el('p', `With ${n} ${n === 1 ? 'release' : 'releases'} this is a first hint, not evidence. It becomes meaningful over several reporting seasons.`, 'small muted'));
+}
+
+/* Deep link: #signals, #sources, #system opens the tab directly */
+addEventListener('load', () => { const t = location.hash.slice(1) || 'signals';
+  const k = document.querySelector(`nav.tabs button[data-tab="${CSS.escape(t)}"]`) || document.querySelector('nav.tabs button[data-tab="signals"]'); k.click(); });
+
+/* ── Sources: companies and monitors ─────────────────────── */
+let COMPANIES = [], EARNINGS_ID = null, ES = [], QSEL = null;
+const lang = s => s.lang || (s.hl || 'en').slice(0, 2);
+const domain = u => { try { const x = new URL(u); return x.hostname.replace(/^www\./, '') + (x.pathname.length > 1 ? x.pathname.slice(0, 28) + (x.pathname.length > 28 ? '…' : '') : ''); } catch(e) { return u; } };
+const afterDot = t => (t || '').includes(' · ') ? t.split(' · ').slice(1).join(' · ') : (t || '');
+const belongsTo = (q, f) => (q.title || '').startsWith(f.name + ' · ');
+
+async function loadSources(){
+  const [ms, cd] = await Promise.all([get('/api/monitors'), get('/api/companies')]);
+  monitors = ms; COMPANIES = cd.companies; EARNINGS_ID = cd.earnings_monitor_id;
+  fillMonitorSelect();                                   // filter in the Findings tab
+  ES = EARNINGS_ID ? await get(`/api/monitors/${EARNINGS_ID}/sources`) : [];
+  if (!QSEL || (QSEL.kind === 'company' && !COMPANIES.some(f => f.key === QSEL.id)) || (QSEL.kind === 'monitor' && !monitors.some(m => m.id === QSEL.id)))
+    QSEL = COMPANIES.length ? {kind: 'company', id: COMPANIES[0].key} : (monitors[0] ? {kind: 'monitor', id: monitors[0].id} : null);
+  drawSide(); drawContent();
+}
+
+function drawSide(){
+  const nav = $('#q-side'); nav.innerHTML = '';
+  const entry = (text, count, dot, on, click, title) => {
+    const b = el('button', null, 'q-entry' + (on ? ' on' : '')); b.setAttribute('aria-current', on ? 'true' : 'false');
+    if (dot != null) b.appendChild(el('span', null, 'q-dot' + (dot ? ' ' + dot : '')));
+    b.appendChild(el('span', text, 'name')); if (count != null) b.appendChild(el('span', count, 'count'));
+    if (title) b.title = title; b.onclick = click; nav.appendChild(b); return b; };
+  const companyRow = f => {
+    const qs = ES.filter(q => belongsTo(q, f)), failing = qs.some(q => q.active && q.errors), active = qs.filter(q => q.active).length;
+    entry(f.name, `${active + f.searches.length}`, failing ? 'warn' : '', QSEL?.kind === 'company' && QSEL.id === f.key,
+      () => { QSEL = {kind: 'company', id: f.key}; drawSide(); drawContent(); },
+      `${f.searches.length} searches for the signals, ${active} active sources in the earnings monitor${failing ? ', one source reports errors' : ''}`);
+  };
+  nav.appendChild(el('h5', 'Portfolio'));
+  COMPANIES.filter(f => (f.group || 'portfolio') === 'portfolio').forEach(companyRow);
+  entry('+ Company', null, null, false, () => editCompany(null)).classList.add('add');
+  const watch = COMPANIES.filter(f => f.group === 'watchlist');
+  if (watch.length) { nav.appendChild(el('h5', 'Watchlist')); watch.forEach(companyRow); }
+  nav.appendChild(el('h5', 'Monitors'));
+  monitors.forEach(m => entry(m.name, `${m.sources_active}/${m.sources}`, m.active ? '' : 'off',
+    QSEL?.kind === 'monitor' && QSEL.id === m.id, () => { QSEL = {kind: 'monitor', id: m.id}; drawSide(); drawContent(); },
+    m.id === EARNINGS_ID ? 'Earnings monitor: its criteria carry your watchlist with the next earnings dates' : ''));
+  entry('+ Monitor', null, null, false, () => editMonitor(null)).classList.add('add');
+}
+
+function drawContent(){
+  const box = $('#q-content'); box.innerHTML = '';
+  if (!QSEL) { box.appendChild(el('div', 'No company and no monitor yet.', 'card empty')); return; }
+  if (QSEL.kind === 'company') box.appendChild(companyCard(COMPANIES.find(f => f.key === QSEL.id)));
+  else box.appendChild(monitorCard(monitors.find(m => m.id === QSEL.id)));
+}
+
+function sourceRow(q, reload, withName){
+  const z = el('div', null, 'q-row' + (q.active ? '' : ' off'));
+  const p = el('span', null, 'q-dot' + (!q.active ? ' off' : q.errors ? ' warn' : '')); p.title = !q.active ? 'paused' : q.errors ? `${q.errors} errors in a row` : 'active'; z.appendChild(p);
+  z.appendChild(el('span', withName ? (q.title || domain(q.url)) : (afterDot(q.title) || domain(q.url))));
+  const d = el('span', domain(q.url), 'dom'); d.title = q.url; z.appendChild(d);
+  z.appendChild(el('span', q.active ? when(q.last_run) : 'paused', 'st last'));
+  const sc = el('span', null, 'sc'); if (q.last_score != null) sc.appendChild(el('span', q.last_score, 'score')); else sc.textContent = '—'; z.appendChild(sc);
+  z.title = q.last_status || '';
+  const t = el('span', null, 'acts');
+  const btn = (txt, title, fn) => { const b = el('button', txt, 'quiet'); b.title = title; b.onclick = async ev => { ev.stopPropagation(); await fn(); reload(); }; t.appendChild(b); };
+  btn('check', 'fetch and judge now', () => post(`/api/sources/${q.id}/run`));
+  btn(q.active ? 'pause' : 'on', q.active ? 'pause' : 'activate again', () => sendJSON(`/api/sources/${q.id}`, 'PUT', {title: q.title, note: q.note, mode: q.mode, active: !q.active}));
+  btn('×', 'delete source', async () => { if (confirm(`Delete source "${q.title || q.url}"?`)) await get(`/api/sources/${q.id}`, {method: 'DELETE'}); });
+  z.appendChild(t); return z;
+}
+
+function addSourceField(mid, prefix, done){
+  const w = el('div', null, 'q-add');
+  const u = el('input'); u.placeholder = 'https://… (feed, newsroom, IR page)';
+  const n = el('input'); n.placeholder = 'label, e.g. Investor Relations'; n.style.flex = '0 1 220px';
+  const b = el('button', 'Add', 'primary'), m = el('span', '', 'small muted');
+  b.onclick = async () => {
+    if (!/^https?:\/\//.test(u.value.trim())) { m.textContent = 'Please enter a URL starting with http(s).'; return; }
+    const title = (prefix ? prefix + ' · ' : '') + (n.value.trim() || domain(u.value.trim()));
+    try { const r = await sendJSON(`/api/monitors/${mid}/sources`, 'POST', {text: `${u.value.trim()} | ${title}`});
+      m.textContent = r.new ? 'added' : 'already there'; u.value = n.value = ''; done(); }
+    catch(e) { m.textContent = 'Error: ' + e.message; } };
+  [u, n, b, m].forEach(x => w.appendChild(x)); return w;
+}
+
+function companyCard(f){
+  const k = el('div', null, 'card');
+  const head = el('div', null, 'q-head'), left = el('div');
+  left.appendChild(el('h3', `${f.name} · ${f.ticker}`));
+  const n = (f.next || []).find(t => t.day >= new Date().toISOString().slice(0, 10));
+  left.appendChild(el('div', n ? `Next earnings ${longDay(n.day)} · ${n.kind || ''}${n.confirmed === false ? ' · estimated' : ' · confirmed'}` : 'Next earnings date not set', 'small muted'));
+  left.appendChild(el('div', `${num(f.headlines)} headlines collected${f.open ? `, ${num(f.open)} not scored yet` : ''}${f.latest ? ` · latest ${when(f.latest + 'Z')}` : ''}`, 'small muted'));
+  head.appendChild(left);
+  const acts = el('div');
+  const k1 = el('button', 'Check now', 'quiet'); k1.onclick = async () => {
+    await Promise.all(ES.filter(q => belongsTo(q, f) && q.active).map(q => post(`/api/sources/${q.id}/run`)));
+    await post('/api/signals/wake'); k1.textContent = 'triggered'; setTimeout(() => k1.textContent = 'Check now', 3000); };
+  const k2 = el('button', 'Edit', 'quiet'); k2.onclick = () => editCompany(f);
+  const k3 = el('button', 'Open in Signals', 'quiet'); k3.onclick = () => { SIG.company = f.key; SIG.day = null; document.querySelector('nav.tabs button[data-tab="signals"]').click(); };
+  const k4 = el('button', 'Remove', 'quiet'); k4.onclick = async () => {
+    if (!confirm(`Remove ${f.name}? Collected headlines stay in the database, and so do its sources in the monitors.`)) return;
+    await get(`/api/companies/${f.key}`, {method: 'DELETE'}); QSEL = null; loadSources(); };
+  [k1, k3, k2, k4].forEach(x => acts.appendChild(x)); head.appendChild(acts); k.appendChild(head);
+
+  // Searches for the signals
+  const b1 = el('div', null, 'q-block'), h1 = el('h4', 'Searches for the signals');
+  const e1 = el('button', 'change', 'quiet'); e1.style.padding = '1px 8px'; e1.onclick = () => editCompany(f); h1.appendChild(e1); b1.appendChild(h1);
+  f.searches.forEach(s => { const z = el('div', null, 'q-search'); z.appendChild(el('span', 'Google News · ' + lang(s), 'small muted'));
+    z.appendChild(el('code', s.q)); b1.appendChild(z); });
+  b1.appendChild(el('div', 'Every headline from these searches is scored on its own and counts towards sentiment and volume.', 'small muted'));
+  k.appendChild(b1);
+
+  // Sources in the earnings monitor
+  const b2 = el('div', null, 'q-block');
+  b2.appendChild(el('h4', 'Sources in the earnings monitor'));
+  const qs = ES.filter(q => belongsTo(q, f)), list = el('div');
+  const reload = async () => { ES = await get(`/api/monitors/${EARNINGS_ID}/sources`); drawSide(); drawContent(); };
+  if (qs.length) qs.forEach(q => list.appendChild(sourceRow(q, reload))); else list.appendChild(el('div', 'No sources in the monitor.', 'small muted'));
+  b2.appendChild(list);
+  b2.appendChild(el('div', 'Each source is fetched as a whole page and judged against the criteria of the earnings monitor, e.g. an IR page that publishes results, presentations and call transcripts. Hits show up under Findings.', 'small muted'));
+  if (EARNINGS_ID) b2.appendChild(addSourceField(EARNINGS_ID, f.name, reload));
+  else b2.appendChild(el('div', 'No earnings monitor configured ("earnings_monitor" in data/watchlist.json).', 'small warn'));
+  k.appendChild(b2);
+
+  // Master data and dates
+  const b3 = el('div', null, 'q-block'); b3.appendChild(el('h4', 'Master data and dates'));
+  const dl = el('dl', null, 'q-dl');
+  const line = (a, b) => { dl.appendChild(el('dt', a)); dl.appendChild(el('dd', b || '—')); };
+  line('Price', `${f.quote || f.ticker}${f.euronext ? ' · Euronext ' + f.euronext : ''}`);
+  line('SEC CIK', f.cik); line('Context', f.context);
+  line('Past earnings', (f.past_events || []).map(t => `${longDay(t.day)}${t.source === 'SEC 8-K 2.02' ? ' (SEC)' : ''}`).join(' · '));
+  b3.appendChild(dl); k.appendChild(b3);
+  return k;
+}
+
+function monitorCard(m){
+  const d = el('div', null, 'card');
+  const head = el('div', null, 'q-head'), left = el('div');
+  const h = el('h3', m.name); if (!m.active) { h.appendChild(document.createTextNode(' ')); h.appendChild(el('span', 'paused', 'tag warn')); }
+  if (m.id === EARNINGS_ID) { h.appendChild(document.createTextNode(' ')); h.appendChild(el('span', 'earnings monitor', 'tag new')); }
+  left.appendChild(h);
+  if (m.description) left.appendChild(el('div', m.description, 'small muted'));
+  left.appendChild(el('div', `every ${m.interval_min} min · hit from ${m.threshold} · ${m.sources_active}/${m.sources} sources active · ${m.hits} hits from ${m.findings} findings · next ${when(m.next_run)}`, 'small muted'));
+  head.appendChild(left);
+  const acts = el('div');
+  const k1 = el('button', 'Check now', 'quiet'); k1.onclick = async () => { await post(`/api/monitors/${m.id}/run`); k1.textContent = 'triggered'; setTimeout(() => k1.textContent = 'Check now', 3000); };
+  const k2 = el('button', 'Criteria and schedule', 'quiet'); k2.onclick = () => editMonitor(m);
+  const k3 = el('button', 'Delete', 'quiet'); k3.onclick = async () => { if (!confirm(`Delete monitor "${m.name}" with all sources and findings?`)) return; await get('/api/monitors/' + m.id, {method: 'DELETE'}); QSEL = null; loadSources(); };
+  [k1, k2].forEach(x => acts.appendChild(x)); if (m.id !== EARNINGS_ID) acts.appendChild(k3);
+  head.appendChild(acts); d.appendChild(head);
+  const b = el('div', null, 'q-block'); b.appendChild(el('h4', 'Sources'));
+  const target = el('div'); b.appendChild(target);
+  const reload = async () => { const qs = await get(`/api/monitors/${m.id}/sources`); if (m.id === EARNINGS_ID) ES = qs;
+    target.innerHTML = ''; if (!qs.length) target.appendChild(el('div', 'No sources yet.', 'small muted'));
+    qs.forEach(q => target.appendChild(sourceRow(q, reload, true))); };
+  reload();
+  const more = el('details'); more.appendChild(el('summary', 'Paste several links at once', 'small'));
+  const ta = el('textarea'); ta.rows = 3; ta.placeholder = 'one URL per line, optionally "URL | title"'; more.appendChild(ta);
+  const kb = el('button', 'Add', 'primary'), km = el('span', '', 'small muted'); kb.style.marginTop = '6px';
+  kb.onclick = async () => { try { const r = await sendJSON(`/api/monitors/${m.id}/sources`, 'POST', {text: ta.value}); ta.value = ''; km.textContent = ` ${r.new} new of ${r.recognized} recognized`; reload(); } catch(e) { km.textContent = ' Error: ' + e.message; } };
+  more.appendChild(kb); more.appendChild(km);
+  b.appendChild(addSourceField(m.id, '', reload)); b.appendChild(more);
+  d.appendChild(b); return d;
+}
+
+/* Company dialog */
+let CEDIT = null;
+function editCompany(f){
+  CEDIT = f;
+  $('#dc-title').textContent = f ? `Edit ${f.name}` : 'Add company';
+  $('#dc-name').value = f?.name || ''; $('#dc-ticker').value = f?.ticker || ''; $('#dc-quote').value = f?.quote || '';
+  $('#dc-cik').value = f?.cik || ''; $('#dc-group').value = f?.group === 'watchlist' ? 'watchlist' : 'portfolio'; $('#dc-euronext').value = f?.euronext || ''; $('#dc-context').value = f?.context || '';
+  $('#dc-searches').value = (f?.searches || []).map(s => `${s.q} | ${lang(s)}`).join('\n');
+  $('#dc-next').value = (f?.next || []).map(t => `${t.day} | ${t.kind || ''} | ${t.confirmed === false ? 'estimated' : 'confirmed'}`).join('\n');
+  $('#dc-past').value = (f?.past || []).map(t => `${t.day} | ${t.kind || ''}`).join('\n');
+  $('#dc-source-row').hidden = !!f; $('#dc-error').textContent = '';
+  $('#d-company').showModal();
+}
+$('#dc-cancel').onclick = () => $('#d-company').close();
+$('#dc-save').onclick = async () => {
+  const lines = id => $(id).value.split('\n').map(z => z.trim()).filter(Boolean).map(z => z.split('|').map(t => t.trim()));
+  const d = {name: $('#dc-name').value.trim(), ticker: $('#dc-ticker').value.trim(), quote: $('#dc-quote').value.trim(),
+    cik: $('#dc-cik').value.trim(), euronext: $('#dc-euronext').value.trim(), context: $('#dc-context').value.trim(),
+    searches: lines('#dc-searches').map(([q, l]) => ({q, lang: l || 'en'})),
+    next: lines('#dc-next').map(([day, kind, c]) => ({day, kind: kind || '', confirmed: !/estim|expect|tbc|\?/i.test(c || '')})),
+    past: lines('#dc-past').map(([day, kind]) => ({day, kind: kind || ''})),
+    add_source: !CEDIT && $('#dc-source').checked,
+    group: CEDIT?.group === 'auto' ? 'auto' : $('#dc-group').value};
+  try {
+    const r = CEDIT ? await sendJSON(`/api/companies/${CEDIT.key}`, 'PUT', d) : await sendJSON('/api/companies', 'POST', d);
+    $('#d-company').close(); QSEL = {kind: 'company', id: r.key}; SIG.overview = null; loadSources();
+  } catch(e) { $('#dc-error').textContent = e.message; }
+};
+
+/* ── Discover ────────────────────────────────────────────── */
+let ESTATUS = 'new';
+const SIGNAL_NAME = {guidance: 'guidance', record: 'record', order: 'order', analysts: 'analysts', acquisition: 'acquisition', demand: 'demand', other: 'other'};
+async function loadDiscover(){
+  $('#e-list').style.opacity = .55;
+  let d; try { d = await get(`/api/discover?status=${ESTATUS}`); } finally { $('#e-list').style.opacity = 1; }
+  const box = $('#e-list'); box.innerHTML = '';
+  const items = ESTATUS === 'new' ? d.candidates : d.candidates.concat(d.single);
+  if (!items.length) box.appendChild(el('div', ESTATUS === 'new' ? 'No candidates yet. They appear once a company stands out positively in several outlets.' : 'Nothing here.', 'empty'));
+  items.forEach(k => box.appendChild(candidateRow(k)));
+  const es = $('#e-single'); es.innerHTML = '';
+  $('#e-single-box').hidden = ESTATUS !== 'new' || !d.single.length;
+  $('#e-single-title').textContent = `Single signals (${d.single.length}): not enough for a candidate yet, or not listed`;
+  d.single.forEach(k => es.appendChild(candidateRow(k, true)));
+  $('#e-state').textContent = [d.state.articles, d.state.market].filter(Boolean).join(' · ');
+}
+function candidateRow(k, compact){
+  const z = el('div', null, 'e-row');
+  const n = el('div', null, 'e-name'); n.appendChild(el('b', k.long_name || k.name));
+  const t = el('div', null, 'small muted');
+  if (k.ticker) { const a = el('a', `${k.ticker}${k.exchange ? ' · ' + k.exchange : ''}`); a.href = `https://finance.yahoo.com/quote/${encodeURIComponent(k.ticker)}`; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.style.color = 'inherit'; t.appendChild(a); }
+  else t.textContent = k.status === 'unlisted' ? 'no listed security found' : (k.checked ? 'ticker unknown' : 'ticker being checked');
+  n.appendChild(t);
+  z.appendChild(n);
+  const m = el('div', null, 'e-num');
+  if (k.pos || k.neg) {
+    m.appendChild(el('b', signed(k.pos - k.neg))); m.appendChild(document.createTextNode(` · ${k.pos} positive, ${k.neg} negative`));
+    const bar = el('div', null, 'e-bar'), all = Math.max(1, k.pos + k.neg);
+    const p = el('i'); p.style.width = (100 * k.pos / all) + '%'; p.style.background = 'var(--sig-pos)';
+    const q = el('i'); q.style.width = (100 * k.neg / all) + '%'; q.style.background = 'var(--sig-neg)';
+    if (k.pos) bar.appendChild(p); if (k.neg) bar.appendChild(q); m.appendChild(bar);
+    m.appendChild(el('div', `${k.outlets} outlets`, 'small muted'));
+  } else m.appendChild(el('span', 'no news', 'small muted'));
+  z.appendChild(m);
+  const ev = el('div', null, 'e-evidence');
+  (k.evidence || []).slice(0, compact ? 2 : 3).forEach(x => {
+    const e = el('div', null, 'e-ev');
+    const pf = el('span', x.direction > 0 ? '▲ ' : x.direction < 0 ? '▼ ' : '– '); pf.style.color = x.direction > 0 ? 'var(--sig-pos)' : x.direction < 0 ? 'var(--sig-neg)' : 'var(--muted)'; e.appendChild(pf);
+    e.appendChild(document.createTextNode(x.reason || x.title));
+    const origin = x.origin.startsWith('article:') ? 'article on ' + x.origin.slice(8) : 'market search';
+    const meta = el('div', null, 'muted');
+    if (/^https:\/\//.test(x.url)) { const a = el('a', x.publisher || 'source'); a.href = x.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; meta.appendChild(a); }
+    else meta.appendChild(document.createTextNode(x.publisher || ''));
+    meta.appendChild(document.createTextNode(` · ${shortDay(x.day)} · ${origin}${x.signal ? ' · ' + (SIGNAL_NAME[x.signal] || x.signal) : ''}`));
+    e.appendChild(meta); ev.appendChild(e);
+  });
+  z.appendChild(ev);
+  const acts = el('div', null, 'e-acts');
+  const btn = (txt, action, main) => { const b = el('button', txt, main ? 'primary' : 'quiet');
+    b.onclick = async () => { b.disabled = true; try { await post(`/api/discover/${encodeURIComponent(k.key)}/${action}`); loadDiscover(); SIG.overview = null; } catch (e) { b.textContent = 'Error'; } };
+    acts.appendChild(b); };
+  if (k.status === 'new' || k.status === 'unlisted') { btn('Watch', 'watch', true); btn('Hide', 'hide'); }
+  else { if (k.status === 'watched') { const b = el('button', 'In Signals', 'quiet'); b.onclick = () => document.querySelector('nav.tabs button[data-tab="signals"]').click(); acts.appendChild(b); } btn('Reset', 'reset'); }
+  z.appendChild(acts);
+  return z;
+}
+document.querySelectorAll('.e-head [data-status]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.e-head [data-status]').forEach(x => x.classList.toggle('on', x === b));
+  ESTATUS = b.dataset.status; loadDiscover(); });
+
+/* ── Alerts in the Signals tab ───────────────────────────── */
+async function loadAlerts(){
+  let d; try { d = await get('/api/alerts'); } catch (e) { return; }
+  $('#a-state').textContent = d.configured
+    ? `Profit warnings, guidance changes, regulatory, legal or management news on portfolio companies: article read or at least two outlets, once per company and topic in 24 hours, at most ${d.max_per_day} per day. Sentiment trends count towards the same limit.`
+    : 'Not configured. Set EARNIQ_ALERT_WEBHOOK_URL (JSON, ntfy, Slack or Discord) to receive alerts.';
+  const names = Object.fromEntries((SIG.overview?.companies || []).map(f => [f.company, f.name]));
+  const box = $('#a-list'); box.innerHTML = '';
+  if (!d.alerts.length) { box.appendChild(el('div', 'No alert sent yet.', 'small muted')); return; }
+  d.alerts.forEach(h => { const z = el('div', null, 'e-ev');
+    const pf = el('span', h.direction > 0 ? '▲ ' : '▼ '); pf.style.color = h.direction > 0 ? 'var(--sig-pos)' : 'var(--sig-neg)'; z.appendChild(pf);
+    z.appendChild(document.createTextNode(`${when(h.time + 'Z')} · ${names[h.company] || h.company} · ${h.topic}: ${h.text}`));
+    z.appendChild(el('div', /^ok/.test(h.result || '') ? 'delivered' : 'not delivered: ' + (h.result || ''), 'muted')); box.appendChild(z); });
+}
+
+/* ── View Combined: price (% since start) and sentiment (points) on one axis ── */
+function drawCombined(){
+  const r = SIG.data.series, s = $('#s-svg-combined'), H = 220, o = 10, u = 196, a = frame(s, H);
+  const p0 = r.find(d => d.price != null)?.price;
+  const price = r.map(d => d.price != null && p0 ? 100 * (d.price / p0 - 1) : null), st = r.map(d => d.net7);
+  const D = nice(Math.max(10, ...price.concat(st).filter(v => v != null).map(Math.abs)));
+  const y = v => o + (D - v) / (2 * D) * (u - o);
+  background(s, a, o, u);
+  [D, D / 2, -D / 2, -D].forEach(v => { sv('line', {x1: a.ml, x2: a.W - a.mr, y1: y(v), y2: y(v), stroke: 'var(--sig-grid)', 'stroke-width': 1}, s);
+    sv('text', {x: a.ml - 6, y: y(v) + 4, 'text-anchor': 'end'}, s).textContent = signed(v); });
+  sv('line', {x1: a.ml, x2: a.W - a.mr, y1: y(0), y2: y(0), stroke: 'var(--sig-axis)', 'stroke-width': 1}, s);
+  sv('text', {x: a.ml - 6, y: y(0) + 4, 'text-anchor': 'end'}, s).textContent = '0';
+  const line = (values, col, label) => {
+    let d = '', on = false, last = null;
+    values.forEach((v, i) => { if (v == null) { if (col === '--sig-mood') on = false; return; }
+      d += (on ? 'L' : 'M') + a.x(i).toFixed(1) + ' ' + y(v).toFixed(1); on = true; last = i; });
+    sv('path', {d, fill: 'none', stroke: `var(${col})`, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'}, s);
+    if (last != null) { sv('circle', {cx: a.x(last), cy: y(values[last]), r: 4, fill: `var(${col})`, stroke: 'var(--surface)', 'stroke-width': 2}, s);
+      sv('text', {x: a.x(last) + 8, y: y(values[last]) + 4, class: 'strong'}, s).textContent = label(values[last]); }
+  };
+  line(price, '--sig-price', v => signed(v) + ' %'); line(st, '--sig-mood', v => signed(v) + ' pt');
+  xLabels(s, a, H - 4); crosshair(s, o, u);
+  $('#s-corr').textContent = correlation(r);
+}
+/* Co-movement: sentiment of a day against the price change on the following trading days (0 to 3 days lead) */
+function correlation(r){
+  const days = r.map((d, i) => ({i, price: d.price, net: d.net})).filter(d => d.price != null);
+  const pearson = (x, y) => { const n = x.length; if (n < 8) return null;
+    const mx = x.reduce((p, c) => p + c, 0) / n, my = y.reduce((p, c) => p + c, 0) / n;
+    let sxy = 0, sxx = 0, syy = 0; for (let k = 0; k < n; k++) { sxy += (x[k] - mx) * (y[k] - my); sxx += (x[k] - mx) ** 2; syy += (y[k] - my) ** 2; }
+    return sxx && syy ? sxy / Math.sqrt(sxx * syy) : null; };
+  let best = null;
+  for (let lag = 0; lag <= 3; lag++) {
+    const x = [], y = [];
+    for (let j = 1; j < days.length; j++) {
+      const ret = 100 * (days[j].price / days[j - 1].price - 1);
+      const src = r[days[j].i - 1 - lag]; if (!src || src.net == null) continue;
+      x.push(src.net); y.push(ret);
+    }
+    const k = pearson(x, y); if (k != null && (!best || Math.abs(k) > Math.abs(best.k))) best = {k, lag, n: x.length};
+  }
+  if (!best) return 'Co-movement: too few trading days with prices and scored headlines to say anything.';
+  const a = Math.abs(best.k), w = a < 0.2 ? 'no visible' : a < 0.4 ? 'a weak' : a < 0.6 ? 'a moderate' : 'a clear';
+  return `Co-movement: ${w} relationship between the sentiment of a day and the price change ${best.lag ? best.lag + ' trading day' + (best.lag > 1 ? 's' : '') + ' later' : 'on the next day'} `
+    + `(r = ${best.k.toLocaleString(undefined, {maximumFractionDigits: 2, minimumFractionDigits: 2})}, ${best.n} trading days${best.k < 0 ? ', inverse' : ''}). With so few days a hint, not evidence.`;
+}
+document.querySelectorAll('.sig-view [data-view]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.sig-view [data-view]').forEach(x => x.classList.toggle('on', x === b));
+  SIG.view = b.dataset.view; try { localStorage.setItem('earniq-view', SIG.view); } catch (e) {}
+  if (SIG.data) drawCharts(); });
+try { const q = new URLSearchParams(location.search).get('view'); if (q) localStorage.setItem('earniq-view', q); } catch (e) {}
+try { const v = localStorage.getItem('earniq-view'); if (v) { SIG.view = v; document.querySelectorAll('.sig-view [data-view]').forEach(x => x.classList.toggle('on', x.dataset.view === v)); } } catch (e) {}
+
+/* ── Discover: trends and auto-watch ── */
+async function loadTrends(){
+  let d; try { d = await get('/api/trends'); } catch (e) { return; }
+  const box = $('#tr-list'); box.innerHTML = '';
+  if (!d.events.length) box.appendChild(el('div', 'Sentiment has not turned for any company in the last three weeks.', 'small muted'));
+  d.events.forEach(t => {
+    const z = el('div', null, 't-row');
+    const l = el('div'); const rr = el('div', null, 't-dir ' + (t.direction > 0 ? 'pos' : 'neg'));
+    rr.appendChild(el('span', t.direction > 0 ? '▲ ' : '▼ ', 'arrow'));
+    rr.appendChild(document.createTextNode(`${t.name}${t.ticker ? ' · ' + t.ticker : ''}`)); l.appendChild(rr);
+    l.appendChild(el('div', `${t.direction > 0 ? 'turning positive' : 'turning negative'} · ${GROUP_LABEL[t.group_now || t.grp] || t.grp} · ${shortDay(t.day)}`, 'small muted'));
+    l.appendChild(el('div', /^ok/.test(t.result || '') ? 'sent as alert' : 'alert: ' + (t.result || '—'), 'e-reason'));
+    z.appendChild(l);
+    const m = el('div', null, 'e-num');
+    m.appendChild(el('b', signed(t.delta) + ' pt')); m.appendChild(document.createTextNode(` to ${signed(t.net7)} (before ${signed(t.baseline)})`));
+    m.appendChild(el('div', `${t.n7} relevant headlines${t.factor ? `, ${num(t.factor, 1)}x the volume` : ''}`, 'small muted'));
+    m.appendChild(el('div', t.price_pct == null ? 'price: no data' : `price 7 days ${t.price_pct > 0 ? '+' : ''}${num(t.price_pct, 1)} %`, 'small muted'));
+    z.appendChild(m);
+    const ev = el('div');
+    (t.evidence || []).slice(0, 3).forEach(x => { const e = el('div', null, 'e-ev');
+      if (/^https:\/\//.test(x.link || '')) { const a = el('a', x.key_point || x.title); a.href = x.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; e.appendChild(a); }
+      else e.appendChild(document.createTextNode(x.key_point || x.title));
+      e.appendChild(el('div', `${x.publisher || ''} · ${shortDay(x.day)}`, 'muted')); ev.appendChild(e); });
+    z.appendChild(ev);
+    const acts = el('div', null, 'e-acts');
+    const v = el('button', 'History', 'quiet'); v.onclick = () => { SIG.company = t.company; SIG.day = null; document.querySelector('nav.tabs button[data-tab="signals"]').click(); }; acts.appendChild(v);
+    z.appendChild(acts); box.appendChild(z);
+  });
+  const vb = $('#v-list'); vb.innerHTML = '';
+  $('#v-title').textContent = `Auto-watch (${d.auto.length} of ${d.max})`;
+  if (!d.auto.length) vb.appendChild(el('div', 'None yet. As soon as candidates have a ticker, the strongest ones land here.', 'small muted'));
+  d.auto.forEach(f => { const z = el('div', null, 't-row');
+    const l = el('div'); l.appendChild(el('b', `${f.name}${f.ticker ? ' · ' + f.ticker : ''}`)); l.appendChild(el('div', f.since ? 'since ' + shortDay(f.since) : '', 'small muted')); z.appendChild(l);
+    z.appendChild(el('div', f.delta == null ? 'not enough headlines yet' : `sentiment 7 d ${signed(f.net7)} (before ${signed(f.baseline)}, ${signed(f.delta)} pt) · ${f.n7} headlines`, 'small'));
+    z.appendChild(el('div', f.price_pct == null ? '' : `price 7 days ${f.price_pct > 0 ? '+' : ''}${num(f.price_pct, 1)} %`, 'small muted'));
+    const acts = el('div', null, 'e-acts'); const v = el('button', 'History', 'quiet');
+    v.onclick = () => { SIG.company = f.company; SIG.day = null; document.querySelector('nav.tabs button[data-tab="signals"]').click(); }; acts.appendChild(v); z.appendChild(acts);
+    vb.appendChild(z); });
+}
+</script>
+</body>
+</html>

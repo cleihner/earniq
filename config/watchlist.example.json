@@ -1,0 +1,50 @@
+{
+  "_comment": "Copied to data/watchlist.json on first start and edited there through the interface. Groups: portfolio (alerts), watchlist, auto (added by Discover). Dates as YYYY-MM-DD.",
+  "earnings_monitor": "Earnings materials",
+  "live_since": "",
+  "backfill_from": "",
+  "companies": [
+    {
+      "key": "apple",
+      "name": "Apple",
+      "group": "portfolio",
+      "ticker": "AAPL",
+      "quote": "AAPL",
+      "cik": "0000320193",
+      "context": "Consumer electronics (iPhone, Mac, iPad, wearables) and services (App Store, iCloud, Apple Music). Not meant: the fruit, Apple Records, Apple Hospitality REIT.",
+      "searches": [
+        {"q": "Apple (earnings OR guidance OR iPhone OR \"App Store\" OR analyst OR China OR demand)", "hl": "en-US", "gl": "US", "lang": "en"}
+      ],
+      "next": [],
+      "past": []
+    },
+    {
+      "key": "asml",
+      "name": "ASML",
+      "group": "portfolio",
+      "ticker": "ASML",
+      "quote": "ASML.AS",
+      "euronext": "NL0010273215-XAMS",
+      "context": "Dutch maker of lithography systems for chip production (EUV, DUV). Quarterly results include net bookings, which the market watches closely.",
+      "searches": [
+        {"q": "ASML (earnings OR bookings OR guidance OR EUV OR analyst OR China OR export)", "hl": "en-US", "gl": "US", "lang": "en"}
+      ],
+      "next": [],
+      "past": []
+    },
+    {
+      "key": "sap",
+      "name": "SAP",
+      "group": "watchlist",
+      "ticker": "SAP",
+      "quote": "SAP.DE",
+      "context": "German enterprise software (ERP, cloud, Business AI). Key metric: current cloud backlog. Not meant: SAP as an abbreviation in other contexts.",
+      "searches": [
+        {"q": "SAP (earnings OR \"cloud backlog\" OR guidance OR analyst OR S/4HANA)", "hl": "en-US", "gl": "US", "lang": "en"},
+        {"q": "SAP (Zahlen OR Prognose OR Cloud OR Analyst)", "hl": "de", "gl": "DE", "lang": "de"}
+      ],
+      "next": [],
+      "past": []
+    }
+  ]
+}

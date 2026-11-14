@@ -1,0 +1,15 @@
+services:
+  earniq:
+    build: .
+    image: earniq:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      EARNIQ_DATA_DIR: /data
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:8106:8106"      # bind to localhost; put a reverse proxy or VPN in front
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # reach Ollama / LM Studio on the host
+    shm_size: "256mb"              # Chromium needs more than Docker's default

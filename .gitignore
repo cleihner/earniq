@@ -1,0 +1,12 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# runtime data: database, your watchlist, secrets
+data/
+.env
+*.db
+*.db-wal
+*.db-shm
+.DS_Store

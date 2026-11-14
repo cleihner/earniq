@@ -1,0 +1,5 @@
+# Small on purpose: HTTP fetching and model calls use the standard library,
+# Chromium runs as a subprocess (no Playwright).
+fastapi==0.141.1
+uvicorn==0.40.0
+pydantic==2.12.4

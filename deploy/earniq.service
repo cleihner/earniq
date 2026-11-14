@@ -1,0 +1,32 @@
+# systemd unit for a bare-metal install (e.g. a Raspberry Pi with Debian).
+# Adjust User and the paths, then:
+#   sudo cp deploy/earniq.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now earniq
+[Unit]
+Description=EARN.iq pre-earnings intelligence
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=earniq
+WorkingDirectory=/opt/earniq
+EnvironmentFile=/opt/earniq/.env
+Environment=PYTHONUNBUFFERED=1
+Environment=EARNIQ_DATA_DIR=/opt/earniq/data
+# Chromium keeps its throwaway profile under /tmp; PrivateTmp isolates it.
+# HOME points there because ProtectHome locks the home directory.
+Environment=HOME=/tmp
+ExecStart=/opt/earniq/.venv/bin/uvicorn earniq.server:app --host 127.0.0.1 --port 8106
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/earniq/data
+
+# Without [Install] the unit stays "static" and does not come back after a reboot.
+[Install]
+WantedBy=multi-user.target

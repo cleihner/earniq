@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "monitors": [
+    {
+      "name": "Earnings materials",
+      "description": "New results releases, presentations, call transcripts and confirmed earnings dates on IR pages and newsrooms.",
+      "criteria": "Relevant: new official earnings material from a company on the watchlist below: a results press release, an earnings presentation or slide deck, an earnings call transcript or webcast page, a quarterly or annual report, a pre-announcement or profit warning. Most relevant when it changes the picture: guidance raised, lowered or withdrawn, results clearly above or below what the company guided, new mid-term targets. Also relevant: a newly confirmed date for the next results release or earnings call.\n\nNot relevant: marketing news, product launches without financial figures, stock price reports without new information, event calendars that do not concern results, navigation or cookie text, material older than the current reporting season.\n\nScoring: 80 or more for new results or a guidance change stated in the text; 50 to 70 for a confirmed earnings date or new material without changes; below 30 for everything else.\n\nWatchlist with next earnings date:\n",
+      "fields": [
+        {"name": "company", "description": "company the item is about, as named in the text"},
+        {"name": "document_type", "description": "one of: results release, presentation, transcript, report, preannouncement, earnings date, other"},
+        {"name": "period", "description": "reporting period covered, e.g. Q3 FY2026, as written"},
+        {"name": "guidance", "description": "one of: raised, lowered, reaffirmed, initiated, withdrawn, none"},
+        {"name": "revenue", "description": "reported revenue with unit and currency, exactly as written"},
+        {"name": "next_earnings_date", "description": "date of the next results release or call if the text names one, as YYYY-MM-DD"},
+        {"name": "on_watchlist", "match": ["apple", "asml", "sap"], "against": "company"}
+      ],
+      "interval_min": 60,
+      "mode": "auto",
+      "threshold": 70,
+      "only_on_change": true,
+      "active": true,
+      "sources": [
+        {"url": "https://investor.apple.com/investor-relations/default.aspx", "title": "Apple · Investor Relations"},
+        {"url": "https://www.apple.com/newsroom/rss-feed.rss", "title": "Apple · Newsroom"},
+        {"url": "https://www.asml.com/en/investors/financial-results", "title": "ASML · Financial results"},
+        {"url": "https://www.asml.com/en/news/press-releases", "title": "ASML · Press releases"},
+        {"url": "https://www.sap.com/investors/en.html", "title": "SAP · Investor Relations"},
+        {"url": "https://www.sap.com/investors/en/financial-documents-and-events/events.html", "title": "SAP · Financial calendar"}
+      ]
+    },
+    {
+      "name": "Large orders",
+      "description": "Orders and contracts that move the needle. Shows the score cap: the model reads the amount, code compares it.",
+      "criteria": "Relevant: a new order, contract or partnership for a company on the watchlist that is large relative to its quarterly revenue, i.e. USD 1 billion or more, or a multi-year framework agreement with a named volume.\n\nNot relevant: orders below USD 1 billion, development or phase-1 contracts without a volume, customer showcases, partnerships without financial terms, repeated coverage of an order that was already reported.",
+      "fields": [
+        {"name": "company", "description": "company receiving the order"},
+        {"name": "topic", "description": "one of: order, partnership, other"},
+        {"name": "customer", "description": "customer or counterparty, as named"},
+        {"name": "volume_musd", "description": "order value in millions of USD as a plain number, only if the text states an amount, otherwise null",
+         "cap": {"below": 1000, "score": 30, "if_missing": 40, "when": {"topic": ["order", "partnership"]}}}
+      ],
+      "interval_min": 180,
+      "mode": "auto",
+      "threshold": 65,
+      "only_on_change": true,
+      "active": true,
+      "sources": [
+        {"url": "https://news.google.com/rss/search?q=ASML+(order+OR+orders+OR+contract)+when:7d&hl=en-US&gl=US&ceid=US:en", "title": "ASML · orders (Google News)"},
+        {"url": "https://news.google.com/rss/search?q=SAP+(contract+OR+deal+OR+partnership)+when:7d&hl=en-US&gl=US&ceid=US:en", "title": "SAP · contracts (Google News)"}
+      ]
+    }
+  ]
+}
